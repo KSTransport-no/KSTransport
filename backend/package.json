@@ -9,7 +9,7 @@
     "build": "echo 'No build step required'"
   },
   "dependencies": {
-    "@sentry/node": "^7.91.0",
+    "@sentry/node": "^9.41.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -20,7 +20,9 @@
     "jsdom": "^27.0.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
-    "pg": "^8.11.3"
+    "pg": "^8.11.3",
+    "axios": "^1.6.2",
+    "fast-xml-parser": "^4.0.12"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

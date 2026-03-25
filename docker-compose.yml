@@ -1,0 +1,96 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: kstransport
+      POSTGRES_USER: kstransport
+      POSTGRES_PASSWORD: kstransport123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "PGPASSWORD=kstransport123 pg_isready -U kstransport -d kstransport"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrations:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: kstransport
+      POSTGRES_USER: kstransport
+      POSTGRES_PASSWORD: kstransport123
+      PGPASSWORD: kstransport123
+    volumes:
+      - ./database/startup-migrations.sql:/startup-migrations.sql
+    command: >
+      bash -c "
+        echo '🔄 Starter migrasjonsprosess...'
+        until pg_isready -h postgres -p 5432 -U kstransport; do
+          echo '⏳ Venter på postgres...'
+          sleep 2
+        done
+        echo '✅ PostgreSQL er klar!'
+        echo '📋 Kjører startup-migrations.sql...'
+        PGPASSWORD=kstransport123 psql -h postgres -U kstransport -d kstransport -f /startup-migrations.sql -v ON_ERROR_STOP=1
+        if [ $? -eq 0 ]; then
+          echo '✅ Migrasjoner fullført!'
+        else
+          echo '❌ Feil ved kjøring av migrasjoner!'
+          exit 1
+        fi
+      "
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"  # Ikke restart hvis den feiler - la backend vente
+
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://kstransport:kstransport123@postgres:5432/kstransport
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      SENTRY_DSN_BACKEND: https://ca7b1eea10a0cddc8fe47df05000e51f@o4510398624890880.ingest.de.sentry.io/4510398654251088
+      SENTRY_ENVIRONMENT: development
+      SENTRY_RELEASE: 1.0.0
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    volumes:
+      - ./backend/uploads:/app/uploads
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3002:3000"
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: /api
+      NEXT_PUBLIC_SENTRY_DSN: https://2a226ee2932a65e694d39d0c7aaed6ca@o4510398624890880.ingest.de.sentry.io/4510398671749200
+      NEXT_PUBLIC_SENTRY_ENVIRONMENT: development
+      NEXT_PUBLIC_SENTRY_RELEASE: 1.0.0
+    depends_on:
+      backend:
+        condition: service_started
+    # No volumes in server mode to keep node_modules inside the image
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+
+  adminer:
+    image: adminer:latest
+    ports:
+      - "8080:8080" # Map host port 8080 to container port 8080
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

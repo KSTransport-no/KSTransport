@@ -1,0 +1,17 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install dependencies first for better caching
+COPY package*.json ./
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Create .next directory
+RUN mkdir -p .next
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]

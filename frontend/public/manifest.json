@@ -1,0 +1,74 @@
+{
+  "name": "KS Transport - Registrering",
+  "short_name": "KS Transport",
+  "description": "Registreringsløsning for sjåfører",
+  "version": "6.0.0",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "no",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities"],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Registrer tid",
+      "short_name": "Registrering",
+      "description": "Registrer arbeidstid, ferie eller sykemelding",
+      "url": "/tidregistrering",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Se kalender",
+      "short_name": "Kalender",
+      "description": "Se dine registreringer",
+      "url": "/kalender",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Rapporter avvik",
+      "short_name": "Avvik",
+      "description": "Rapporter problemer eller avvik",
+      "url": "/avvik",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

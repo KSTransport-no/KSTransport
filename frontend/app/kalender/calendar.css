@@ -1,0 +1,193 @@
+/* Custom styles for react-calendar */
+.react-calendar {
+  width: 100%;
+  max-width: 400px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-family: inherit;
+  line-height: 1.125em;
+}
+
+.react-calendar__navigation {
+  display: flex;
+  height: 44px;
+  margin-bottom: 1em;
+}
+
+.react-calendar__navigation button {
+  min-width: 44px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  margin-top: 8px;
+}
+
+.react-calendar__navigation button:enabled:hover,
+.react-calendar__navigation button:enabled:focus {
+  background-color: #f3f4f6;
+}
+
+.react-calendar__navigation button[disabled] {
+  background-color: #f0f0f0;
+}
+
+.react-calendar__month-view__weekdays {
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 0.75em;
+}
+
+.react-calendar__month-view__weekdays__weekday {
+  padding: 0.5em;
+}
+
+/* Stil for ukenummer-kolonne */
+.react-calendar__month-view__weekNumbers {
+  width: 3em;
+  position: relative;
+}
+
+/* Legg til "UKE NR." tekst øverst i ukenummer-kolonnen */
+.react-calendar__month-view__weekNumbers::before {
+  content: "UKE NR.";
+  position: absolute;
+  top: -1em;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.6em;
+  font-weight: bold;
+  color: #3b82f6;
+  background-color: #f0f9ff;
+  border-radius: 3px;
+  padding: 0.1em 0.2em;
+  z-index: 10;
+  line-height: 1;
+}
+
+.react-calendar__month-view__weekNumbers .react-calendar__tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75em;
+  font-weight: bold;
+  color: #3b82f6;
+  background-color: #f0f9ff;
+  border-radius: 4px;
+  margin: 1px;
+  height: 2.5em; /* Samme høyde som dag-celler */
+  line-height: 1;
+}
+
+/* Juster kalender-layout for bedre synkronisering */
+.react-calendar__month-view {
+  display: flex;
+}
+
+.react-calendar__month-view__days {
+  flex: 1;
+}
+
+/* Sørg for at ukenummer og dager har samme høyde */
+.react-calendar__month-view__weekNumbers .react-calendar__tile,
+.react-calendar__month-view__days .react-calendar__tile {
+  height: 2.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Bedre spacing mellom ukenummer og kalender */
+.react-calendar__month-view__weekNumbers {
+  margin-right: 0.5em;
+}
+
+/* Juster ukenummer-styling for bedre synkronisering */
+.react-calendar__month-view__weekNumbers .react-calendar__tile {
+  margin-bottom: 0;
+  border: 1px solid #e5e7eb;
+}
+
+.react-calendar__month-view__days__day--weekend {
+  color: #d10000;
+}
+
+.react-calendar__month-view__days__day--neighboringMonth {
+  color: #757575;
+}
+
+.react-calendar__tile {
+  max-width: 100%;
+  padding: 10px 6.6667px;
+  background: none;
+  text-align: center;
+  line-height: 16px;
+  font-size: 0.833em;
+  position: relative;
+}
+
+/* Fremhev dager med data */
+.react-calendar__tile.has-data abbr {
+  font-weight: 700; /* behold helg-farge fra kalenderen */
+}
+
+.react-calendar__tile.has-data:enabled:hover,
+.react-calendar__tile.has-data:enabled:focus {
+  background-color: #eef2ff; /* indigo-50 */
+}
+
+/* Stil for helligdager */
+.react-calendar__tile.holiday abbr {
+  color: #dc2626 !important; /* rød farge for helligdager */
+  font-weight: 700;
+}
+
+.react-calendar__tile.holiday:enabled:hover,
+.react-calendar__tile.holiday:enabled:focus {
+  background-color: #fef2f2; /* rød-50 */
+}
+
+/* Kombinert stil for helligdager med data */
+.react-calendar__tile.holiday.has-data abbr {
+  color: #dc2626 !important;
+  font-weight: 700;
+}
+
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+  background-color: #e6f3ff;
+}
+
+.react-calendar__tile--now {
+  background: #ffff76;
+}
+
+.react-calendar__tile--now:enabled:hover,
+.react-calendar__tile--now:enabled:focus {
+  background: #ffffa9;
+}
+
+.react-calendar__tile--hasActive {
+  background: #76baff;
+}
+
+.react-calendar__tile--hasActive:enabled:hover,
+.react-calendar__tile--hasActive:enabled:focus {
+  background: #a9d4ff;
+}
+
+.react-calendar__tile--active {
+  background: #006edc;
+  color: white;
+}
+
+.react-calendar__tile--active:enabled:hover,
+.react-calendar__tile--active:enabled:focus {
+  background: #1087ff;
+}
+
+.react-calendar--selectRange .react-calendar__tile--hover {
+  background-color: #e6f3ff;
+}

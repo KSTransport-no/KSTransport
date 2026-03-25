@@ -1,0 +1,171 @@
+// IMPORTANT: Import Sentry instrumentation FIRST, before any other imports
+require('./instrument.js');
+
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const path = require('path');
+const Sentry = require('@sentry/node');
+const logger = require('./utils/logger');
+const { handleError } = require('./utils/errorHandler');
+const { sanitizeMiddleware } = require('./utils/sanitize');
+require('dotenv').config();
+
+// Importer routes
+const authRoutes = require('./routes/auth');
+const skiftRoutes = require('./routes/skift');
+const avvikRoutes = require('./routes/avvik');
+const forbedringsforslagRoutes = require('./routes/forbedringsforslag');
+const dataRoutes = require('./routes/data');
+const adminRoutes = require('./routes/admin');
+const crudRoutes = require('./routes/crud');
+const uploadRoutes = require('./routes/upload');
+const infoRoutes = require('./routes/info');
+const trafikkRoutes = require('./routes/trafikk');
+const værRoutes = require('./routes/vær');
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutter
+  max: process.env.NODE_ENV === 'development' ? 1000 : 100, // Høyere grense i utvikling
+  message: { feil: 'For mange forespørsler, prøv igjen senere' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// Sentry request handler must be the first middleware
+app.use(Sentry.Handlers.requestHandler());
+// TracingHandler creates a trace for every incoming request
+app.use(Sentry.Handlers.tracingHandler());
+
+// Middleware
+app.use(helmet());
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://your-domain.com'] 
+    : true, // Allow all origins in development
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(limiter);
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+app.use(sanitizeMiddleware); // Sanitize all input
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV 
+  });
+});
+
+// Reset rate limiting for development
+if (process.env.NODE_ENV === 'development') {
+  app.post('/reset-rate-limit', (req, res) => {
+    // Reset rate limiting for the current IP
+    limiter.resetKey(req.ip);
+    res.json({ message: 'Rate limiting reset for IP: ' + req.ip });
+  });
+}
+
+// API routes
+app.use('/api/auth', authRoutes);
+app.use('/api/skift', skiftRoutes);
+app.use('/api/avvik', avvikRoutes);
+app.use('/api/forbedringsforslag', forbedringsforslagRoutes);
+app.use('/api/data', dataRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/crud', crudRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/info', infoRoutes);
+app.use('/api/trafikk', trafikkRoutes);
+app.use('/api/weather', værRoutes);
+
+// Test-rute for å sjekke om serveren fungerer
+app.get('/test', (req, res) => {
+  res.json({ melding: 'Server fungerer!' });
+});
+
+// Direkte rute for avvik-bilder (må være før 404-handleren)
+app.get('/uploads/avvik/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, 'uploads', 'avvik', filename);
+  
+  // Sjekk om filen eksisterer
+  const fs = require('fs');
+  if (fs.existsSync(filePath)) {
+    // Set riktig Content-Type for bilder
+    const ext = path.extname(filename).toLowerCase();
+    const mimeTypes = {
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png',
+      '.gif': 'image/gif',
+      '.webp': 'image/webp'
+    };
+    
+    const contentType = mimeTypes[ext] || 'application/octet-stream';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache i 1 år
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Tillat alle origins for bilder
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    
+    res.sendFile(filePath);
+  } else {
+    res.status(404).json({ feil: 'Bilde ikke funnet' });
+  }
+});
+
+// Serve statiske filer direkte med cache headers
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  maxAge: '1y', // Cache i 1 år
+  etag: true,
+  lastModified: true
+}));
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({ feil: 'Endepunkt ikke funnet' });
+});
+
+// Sentry error handler must be before other error handlers
+app.use(Sentry.Handlers.errorHandler());
+
+// Global error handler (falls through if Sentry doesn't handle it)
+app.use((error, req, res, next) => {
+  handleError(error, req, res, 'Global error handler');
+});
+
+// Håndter unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  if (Sentry) {
+    Sentry.captureException(reason);
+  }
+  // Ikke krasj serveren, bare logg feilen
+});
+
+// Håndter uncaught exceptions
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught Exception:', error);
+  if (Sentry) {
+    Sentry.captureException(error);
+  }
+  // La serveren fortsette å kjøre hvis mulig
+  // I produksjon bør du vurdere å restarte serveren
+});
+
+// Start server
+app.listen(PORT, () => {
+  logger.log(`🚛 KS Transport API server kjører på port ${PORT}`);
+  logger.log(`🌍 Miljø: ${process.env.NODE_ENV || 'development'}`);
+});
+
+module.exports = app;

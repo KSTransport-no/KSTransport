@@ -156,7 +156,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { token, sjåfør: sjåførData } = response.data
       
       // Lagre token i cookie
-      Cookies.set('token', token, { expires: 2 }) // 2 dager
+      Cookies.set('token', token, {
+        expires: 2,
+        secure: window.location.protocol === 'https:',
+        sameSite: 'strict',
+        path: '/',
+      })
       
       // Lagre sist aktivitet
       if (typeof window !== 'undefined') {

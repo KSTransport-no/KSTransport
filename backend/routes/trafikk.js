@@ -1,45 +1,66 @@
 const express = require("express");
 const axios = require("axios");
-const { XMLParser } = require("fast-xml-parser");
 const logger = require("../utils/logger");
 
 const router = express.Router();
 
-const DATEX_BASE_URL =
-  "https://datex-server-get-v3-1.atlas.vegvesen.no/datexapi";
+const TOMTOM_BASE = "https://api.tomtom.com";
 
-const parser = new XMLParser({
-  ignoreAttributes: false,
-  attributeNamePrefix: "@_",
-  removeNSPrefix: true,
-  parseTagValue: true,
-  trimValues: true,
-});
+function getApiKey() {
+  return process.env.TOMTOM_API_KEY;
+}
+
+// Bounding box for Rogaland/Stavanger area (TomTom format: minLon,minLat,maxLon,maxLat)
+const BBOX = "5.45,58.75,6.10,59.15";
+
+// Key road segments to monitor for flow/delays (lat,lon pairs)
+const FLOW_SEGMENTS = [
+  { name: "E39 Stavanger sentrum", lat: 58.9700, lon: 5.7331 },
+  { name: "E39 Sandnes", lat: 58.8500, lon: 5.7350 },
+  { name: "Rv13 Ryfylke", lat: 59.0500, lon: 5.9500 },
+  { name: "E39 Ålgård", lat: 58.7650, lon: 5.8500 },
+  { name: "Rv509 Sola/Tananger", lat: 58.9300, lon: 5.5800 },
+];
 
 router.get("/", async (req, res) => {
-  try {
-    logger.log("Henter trafikkinformasjon fra DATEX II...");
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    logger.error("TOMTOM_API_KEY is not configured");
+    return res.json({
+      roadwork: [],
+      incidents: [],
+      delays: [],
+      message: "Trafikktjeneste ikke konfigurert (mangler API-nøkkel)",
+    });
+  }
 
-    const [trafikkmeldinger, reisetider] = await Promise.all([
-      hentTrafikkmeldinger(),
-      hentReisetider(),
+  try {
+    logger.log("Henter trafikkinformasjon fra TomTom...");
+
+    const [incidentData, flowData] = await Promise.all([
+      hentIncidents(apiKey),
+      hentFlowDelays(apiKey),
     ]);
 
+    const roadwork = [];
+    const incidents = [];
+
+    for (const item of incidentData) {
+      if (item.category === "roadwork") {
+        roadwork.push(item.text);
+      } else {
+        incidents.push(item.text);
+      }
+    }
+
     res.json({
-      roadwork: trafikkmeldinger.filter((m) => m.type === "roadworks"),
-      incidents: trafikkmeldinger.filter((m) =>
-        [
-          "accident",
-          "incident",
-          "networkManagement",
-          "maintenanceWorks",
-        ].includes(m.type),
-      ),
-      delays: reisetider,
-      message: "Trafikkinformasjon fra Statens vegvesen DATEX II",
+      roadwork,
+      incidents,
+      delays: flowData,
+      message: "Trafikkinformasjon fra TomTom",
     });
   } catch (error) {
-    logger.error("Feil ved henting av DATEX II trafikkinformasjon:", error);
+    logger.error("Feil ved henting av TomTom trafikkinformasjon:", error.message);
     res.json({
       roadwork: [],
       incidents: [],
@@ -49,186 +70,108 @@ router.get("/", async (req, res) => {
   }
 });
 
-async function hentTrafikkmeldinger() {
+async function hentIncidents(apiKey) {
   try {
-    const response = await axios.get(
-      `${DATEX_BASE_URL}/GetSituation/pullsnapshotdata`,
-      {
-        headers: {
-          Accept: "application/xml",
-          "User-Agent": "KSTransport/1.0",
-        },
-        timeout: 15000,
+    // TomTom Incident Details API v5
+    const url = `${TOMTOM_BASE}/traffic/services/5/incidentDetails`;
+    const response = await axios.get(url, {
+      params: {
+        key: apiKey,
+        bbox: BBOX,
+        fields:
+          "{incidents{type,geometry{type,coordinates},properties{id,iconCategory,magnitudeOfDelay,events{description,code},startTime,endTime,from,to,length,delay,roadNumbers}}}",
+        language: "nb-NO",
+        categoryFilter: "0,1,2,3,4,5,6,7,8,9,10,11,14",
+        timeValidityFilter: "present",
       },
-    );
-
-    return parseTrafikkmeldinger(response.data);
-  } catch (error) {
-    logger.error(
-      "Feil ved henting av trafikkmeldinger:",
-      error.response?.status || error.message,
-    );
-    return [];
-  }
-}
-
-async function hentReisetider() {
-  try {
-    const response = await axios.get(
-      `${DATEX_BASE_URL}/GetTravelTimeData/pullsnapshotdata`,
-      {
-        headers: {
-          Accept: "application/xml",
-          "User-Agent": "KSTransport/1.0",
-        },
-        timeout: 15000,
-      },
-    );
-
-    return parseReisetider(response.data);
-  } catch (error) {
-    logger.error(
-      "Feil ved henting av reisetider:",
-      error.response?.status || error.message,
-    );
-    return [];
-  }
-}
-
-function toArray(value) {
-  if (!value) return [];
-  return Array.isArray(value) ? value : [value];
-}
-
-function firstText(value) {
-  if (!value) return null;
-  if (typeof value === "string") return value;
-  if (typeof value === "number") return String(value);
-  if (typeof value === "object") {
-    if (typeof value.value === "string") return value.value;
-    if (typeof value._text === "string") return value._text;
-  }
-  return null;
-}
-
-function parseTrafikkmeldinger(xmlData) {
-  try {
-    const json = parser.parse(xmlData);
-
-    const payload =
-      json?.payloadPublication ||
-      json?.d2LogicalModel?.payloadPublication ||
-      json?.D2LogicalModel?.payloadPublication;
-
-    const situations = toArray(payload?.situation);
-
-    const records = situations.flatMap((situation) => {
-      return toArray(situation?.situationRecord);
+      timeout: 10000,
     });
 
-    return records
-      .map((record) => {
-        const comments = toArray(record?.generalPublicComment);
-        const commentText =
-          comments
-            .flatMap((c) => toArray(c?.comment))
-            .flatMap((c) => toArray(c?.value))
-            .map(firstText)
-            .find(Boolean) || null;
+    const items = response.data?.incidents || [];
 
-        const group =
-          record?.groupOfLocations?.locationContainedInGroup ||
-          record?.groupOfLocations ||
-          null;
+    return items.map((inc) => {
+      const props = inc.properties || {};
+      const from = props.from || "";
+      const to = props.to || "";
+      const events = (props.events || [])
+        .map((e) => e.description)
+        .filter(Boolean)
+        .join(". ");
+      const roads = (props.roadNumbers || []).join(", ");
+      const delay = props.delay
+        ? ` (${Math.round(props.delay / 60)} min forsinkelse)`
+        : "";
 
-        const roadName =
-          firstText(group?.tpegOtherPointDescriptor?.descriptor) ||
-          firstText(group?.alertCPoint?.alertCLocation?.specificLocation) ||
-          firstText(
-            record?.groupOfLocations?.supplementaryPositionalDescription
-              ?.locationDescriptor,
-          ) ||
-          "Ukjent lokasjon";
+      const location = [roads, from, to ? `→ ${to}` : ""]
+        .filter(Boolean)
+        .join(" ");
+      const description = events || "Trafikkmelding";
 
-        return {
-          id: record?.["@_id"] || record?.id || cryptoSafeId(),
-          type: mapSituationType(
-            record?.["@_xsi:type"] || record?.["@_type"] || "",
-          ),
-          beskrivelse: commentText || "Ingen beskrivelse tilgjengelig",
-          lokasjon: roadName,
-          tidspunkt:
-            record?.overallStartTime ||
-            record?.probabilityOfOccurrence ||
-            new Date().toISOString(),
-        };
-      })
-      .filter((m) => m.beskrivelse)
-      .slice(0, 50);
+      return {
+        category: mapCategory(props.iconCategory),
+        text: `${location}: ${description}${delay}`.trim(),
+      };
+    });
   } catch (error) {
-    logger.error("Feil ved parsing av trafikkmeldinger:", error);
+    logger.error(
+      "Feil ved henting av TomTom incidents:",
+      error.response?.status || error.message,
+    );
     return [];
   }
 }
 
-function parseReisetider(xmlData) {
+async function hentFlowDelays(apiKey) {
   try {
-    const json = parser.parse(xmlData);
+    const results = await Promise.all(
+      FLOW_SEGMENTS.map(async (seg) => {
+        try {
+          const url = `${TOMTOM_BASE}/traffic/services/4/flowSegmentData/absolute/10/json`;
+          const response = await axios.get(url, {
+            params: {
+              key: apiKey,
+              point: `${seg.lat},${seg.lon}`,
+              unit: "KMPH",
+            },
+            timeout: 8000,
+          });
 
-    const payload =
-      json?.payloadPublication ||
-      json?.d2LogicalModel?.payloadPublication ||
-      json?.D2LogicalModel?.payloadPublication;
+          const flow = response.data?.flowSegmentData;
+          if (!flow) return null;
 
-    const publications = toArray(payload?.travelTimePublication);
-    const measurements = publications.flatMap((pub) =>
-      toArray(pub?.travelTime),
+          const current = flow.currentSpeed;
+          const freeFlow = flow.freeFlowSpeed;
+
+          if (!current || !freeFlow) return null;
+
+          // Only report if current speed is significantly below free-flow
+          const ratio = current / freeFlow;
+          if (ratio >= 0.75) return null;
+
+          const delayPercent = Math.round((1 - ratio) * 100);
+          return `${seg.name}: ${current} km/t (normalt ${freeFlow} km/t, ${delayPercent}% tregere)`;
+        } catch {
+          return null;
+        }
+      }),
     );
 
-    return measurements
-      .map((item) => {
-        const sekunder =
-          Number(item?.travelTime) || Number(item?.averageTravelTime) || null;
-
-        if (!sekunder) return null;
-
-        const routeName =
-          firstText(item?.name) ||
-          firstText(item?.measurementSiteReference) ||
-          "Ukjent lokasjon";
-
-        return {
-          id: item?.["@_id"] || item?.id || cryptoSafeId(),
-          tid: Math.round(sekunder / 60),
-          lokasjon: routeName,
-          tidspunkt: item?.measurementTimeDefault || new Date().toISOString(),
-        };
-      })
-      .filter(Boolean)
-      .slice(0, 50);
+    return results.filter(Boolean);
   } catch (error) {
-    logger.error("Feil ved parsing av reisetider:", error);
+    logger.error(
+      "Feil ved henting av TomTom flow:",
+      error.message,
+    );
     return [];
   }
 }
 
-function mapSituationType(rawType) {
-  const value = String(rawType || "").toLowerCase();
-
-  if (value.includes("roadworks") || value.includes("maintenance")) {
-    return "roadworks";
-  }
-  if (value.includes("accident")) {
-    return "accident";
-  }
-  if (value.includes("incident") || value.includes("network")) {
-    return "incident";
-  }
-  return "ukjent";
-}
-
-function cryptoSafeId() {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+function mapCategory(iconCategory) {
+  // TomTom icon categories: 1=accident, 2=fog, 3=dangerous, 4=rain,
+  // 5=ice, 6=jam, 7=lane closed, 8=road closed, 9=road works,
+  // 10=wind, 11=flooding, 14=broken down vehicle
+  if (iconCategory === 9) return "roadwork";
+  return "incident";
 }
 
 module.exports = router;

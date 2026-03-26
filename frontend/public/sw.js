@@ -1,5 +1,5 @@
 // Cache versjon med timestamp for bedre cache-busting
-const CACHE_VERSION = "v9";
+const CACHE_VERSION = "v1.0.0-" + new Date().getTime();
 const CACHE_NAME = `kstransport-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline";
 

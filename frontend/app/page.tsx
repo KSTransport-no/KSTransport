@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Truck, Clock, Calendar, AlertTriangle, MapPin, Package, Pause, Scale, Edit, Save, X, Key, Cloud, CloudRain, Sun, CloudSnow, Navigation, AlertCircle, LogOut, CheckCircle, Shield } from 'lucide-react'
+import { Truck, Clock, Calendar, AlertTriangle, MapPin, Package, Pause, Scale, Edit, Save, X, Key, Cloud, CloudRain, Sun, CloudSnow, Navigation, AlertCircle, LogOut, CheckCircle, Shield, ChevronDown, ChevronUp } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { NotificationBell } from '@/components/NotificationBell'
 
@@ -111,6 +111,7 @@ export default function HomePage() {
     incidents: [],
     delays: []
   })
+  const [expandedTraffic, setExpandedTraffic] = useState<{ roadwork: boolean; incidents: boolean; delays: boolean }>({ roadwork: false, incidents: false, delays: false })
   const [loadingWeather, setLoadingWeather] = useState(false)
 
   const loadWeatherData = async () => {
@@ -1780,14 +1781,26 @@ export default function HomePage() {
                   <div className="flex items-center gap-2 mb-2">
                     <AlertCircle className="h-4 w-4 text-orange-500" />
                     <span className="text-sm font-medium text-orange-700">Veiarbeid</span>
+                    {trafficAlerts.roadwork.length > 0 && (
+                      <span className="text-xs text-gray-400">({trafficAlerts.roadwork.length})</span>
+                    )}
                   </div>
                   {trafficAlerts.roadwork.length > 0 ? (
                     <div className="space-y-1">
-                      {trafficAlerts.roadwork.map((alert, index) => (
+                      {(expandedTraffic.roadwork ? trafficAlerts.roadwork : trafficAlerts.roadwork.slice(0, 3)).map((alert, index) => (
                         <div key={index} className="text-xs text-gray-600 bg-orange-50 p-2 rounded">
                           {alert}
                         </div>
                       ))}
+                      {trafficAlerts.roadwork.length > 3 && (
+                        <button
+                          onClick={() => setExpandedTraffic(prev => ({ ...prev, roadwork: !prev.roadwork }))}
+                          className="flex items-center gap-1 text-xs text-orange-600 hover:text-orange-800 mt-1"
+                        >
+                          {expandedTraffic.roadwork ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                          {expandedTraffic.roadwork ? 'Vis færre' : `Vis alle ${trafficAlerts.roadwork.length}`}
+                        </button>
+                      )}
                     </div>
                   ) : (
                     <div className="text-xs text-gray-400 italic">Ingen rapportert</div>
@@ -1799,14 +1812,26 @@ export default function HomePage() {
                   <div className="flex items-center gap-2 mb-2">
                     <AlertTriangle className="h-4 w-4 text-red-500" />
                     <span className="text-sm font-medium text-red-700">Trafikkulykker</span>
+                    {trafficAlerts.incidents.length > 0 && (
+                      <span className="text-xs text-gray-400">({trafficAlerts.incidents.length})</span>
+                    )}
                   </div>
                   {trafficAlerts.incidents.length > 0 ? (
                     <div className="space-y-1">
-                      {trafficAlerts.incidents.map((alert, index) => (
+                      {(expandedTraffic.incidents ? trafficAlerts.incidents : trafficAlerts.incidents.slice(0, 3)).map((alert, index) => (
                         <div key={index} className="text-xs text-gray-600 bg-red-50 p-2 rounded">
                           {alert}
                         </div>
                       ))}
+                      {trafficAlerts.incidents.length > 3 && (
+                        <button
+                          onClick={() => setExpandedTraffic(prev => ({ ...prev, incidents: !prev.incidents }))}
+                          className="flex items-center gap-1 text-xs text-red-600 hover:text-red-800 mt-1"
+                        >
+                          {expandedTraffic.incidents ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                          {expandedTraffic.incidents ? 'Vis færre' : `Vis alle ${trafficAlerts.incidents.length}`}
+                        </button>
+                      )}
                     </div>
                   ) : (
                     <div className="text-xs text-gray-400 italic">Ingen rapportert</div>
@@ -1818,14 +1843,26 @@ export default function HomePage() {
                   <div className="flex items-center gap-2 mb-2">
                     <Clock className="h-4 w-4 text-yellow-500" />
                     <span className="text-sm font-medium text-yellow-700">Forsinkelser</span>
+                    {trafficAlerts.delays.length > 0 && (
+                      <span className="text-xs text-gray-400">({trafficAlerts.delays.length})</span>
+                    )}
                   </div>
                   {trafficAlerts.delays.length > 0 ? (
                     <div className="space-y-1">
-                      {trafficAlerts.delays.map((alert, index) => (
+                      {(expandedTraffic.delays ? trafficAlerts.delays : trafficAlerts.delays.slice(0, 3)).map((alert, index) => (
                         <div key={index} className="text-xs text-gray-600 bg-yellow-50 p-2 rounded">
                           {alert}
                         </div>
                       ))}
+                      {trafficAlerts.delays.length > 3 && (
+                        <button
+                          onClick={() => setExpandedTraffic(prev => ({ ...prev, delays: !prev.delays }))}
+                          className="flex items-center gap-1 text-xs text-yellow-600 hover:text-yellow-800 mt-1"
+                        >
+                          {expandedTraffic.delays ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                          {expandedTraffic.delays ? 'Vis færre' : `Vis alle ${trafficAlerts.delays.length}`}
+                        </button>
+                      )}
                     </div>
                   ) : (
                     <div className="text-xs text-gray-400 italic">Ingen rapportert</div>

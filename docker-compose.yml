@@ -2,16 +2,16 @@ services:
   postgres:
     image: postgres:15
     environment:
-      POSTGRES_DB: kstransport
-      POSTGRES_USER: kstransport
-      POSTGRES_PASSWORD: kstransport123
+      POSTGRES_DB: ${POSTGRES_DB:-kstransport}
+      POSTGRES_USER: ${POSTGRES_USER:-kstransport}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "PGPASSWORD=kstransport123 pg_isready -U kstransport -d kstransport"]
+      test: ["CMD-SHELL", "PGPASSWORD=${POSTGRES_PASSWORD} pg_isready -U ${POSTGRES_USER:-kstransport} -d ${POSTGRES_DB:-kstransport}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -19,23 +19,23 @@ services:
   migrations:
     image: postgres:15
     environment:
-      POSTGRES_DB: kstransport
-      POSTGRES_USER: kstransport
-      POSTGRES_PASSWORD: kstransport123
-      PGPASSWORD: kstransport123
+      POSTGRES_DB: ${POSTGRES_DB:-kstransport}
+      POSTGRES_USER: ${POSTGRES_USER:-kstransport}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     volumes:
       - ./database/startup-migrations.sql:/startup-migrations.sql
     command: >
       bash -c "
         echo '🔄 Starter migrasjonsprosess...'
-        until pg_isready -h postgres -p 5432 -U kstransport; do
+        until pg_isready -h postgres -p 5432 -U ${POSTGRES_USER:-kstransport}; do
           echo '⏳ Venter på postgres...'
           sleep 2
         done
         echo '✅ PostgreSQL er klar!'
         echo '📋 Kjører startup-migrations.sql...'
-        PGPASSWORD=kstransport123 psql -h postgres -U kstransport -d kstransport -f /startup-migrations.sql -v ON_ERROR_STOP=1
-        if [ $? -eq 0 ]; then
+        psql -h postgres -U ${POSTGRES_USER:-kstransport} -d ${POSTGRES_DB:-kstransport} -f /startup-migrations.sql -v ON_ERROR_STOP=1
+        if [ $$? -eq 0 ]; then
           echo '✅ Migrasjoner fullført!'
         else
           echo '❌ Feil ved kjøring av migrasjoner!'
@@ -52,12 +52,13 @@ services:
     ports:
       - "3001:3001"
     environment:
-      NODE_ENV: development
-      DATABASE_URL: postgresql://kstransport:kstransport123@postgres:5432/kstransport
-      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
-      SENTRY_DSN_BACKEND: https://ca7b1eea10a0cddc8fe47df05000e51f@o4510398624890880.ingest.de.sentry.io/4510398654251088
-      SENTRY_ENVIRONMENT: development
-      SENTRY_RELEASE: 1.0.0
+      NODE_ENV: ${NODE_ENV:-development}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-kstransport}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-kstransport}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      SENTRY_DSN_BACKEND: ${SENTRY_DSN_BACKEND:-}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-development}
+      SENTRY_RELEASE: ${SENTRY_RELEASE:-1.0.0}
+      TOMTOM_API_KEY: ${TOMTOM_API_KEY:-}
     depends_on:
       migrations:
         condition: service_completed_successfully
@@ -73,11 +74,11 @@ services:
     ports:
       - "3002:3000"
     environment:
-      NODE_ENV: development
-      NEXT_PUBLIC_API_URL: /api
-      NEXT_PUBLIC_SENTRY_DSN: https://2a226ee2932a65e694d39d0c7aaed6ca@o4510398624890880.ingest.de.sentry.io/4510398671749200
-      NEXT_PUBLIC_SENTRY_ENVIRONMENT: development
-      NEXT_PUBLIC_SENTRY_RELEASE: 1.0.0
+      NODE_ENV: ${NODE_ENV:-development}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api}
+      NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+      NEXT_PUBLIC_SENTRY_ENVIRONMENT: ${NEXT_PUBLIC_SENTRY_ENVIRONMENT:-development}
+      NEXT_PUBLIC_SENTRY_RELEASE: ${NEXT_PUBLIC_SENTRY_RELEASE:-1.0.0}
     depends_on:
       backend:
         condition: service_started

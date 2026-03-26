@@ -1,6 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const rateLimit = require("express-rate-limit");
 const { body, validationResult } = require("express-validator");
 const pool = require("../config/database");
 const { authenticateToken } = require("../middleware/auth");
@@ -9,9 +10,29 @@ const { handleError } = require("../utils/errorHandler");
 
 const router = express.Router();
 
+// Strict rate limiter for login — 5 attempts per 15 minutes per IP
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { feil: "For mange innloggingsforsøk. Prøv igjen om 15 minutter." },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+});
+
+// Strict rate limiter for password change — 5 attempts per 15 minutes
+const passwordChangeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { feil: "For mange forsøk på passordendring. Prøv igjen om 15 minutter." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Pålogging
 router.post(
   "/login",
+  loginLimiter,
   [body("epost").isEmail(), body("passord").isLength({ min: 6 })],
   async (req, res) => {
     try {
@@ -97,6 +118,7 @@ router.get("/me", authenticateToken, async (req, res) => {
 router.put(
   "/endre-passord",
   authenticateToken,
+  passwordChangeLimiter,
   [
     body("nåværendePassord").isLength({ min: 6 }),
     body("nyttPassord").isLength({ min: 6 }),

@@ -45,7 +45,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !isLoginPage) {
       // Token er ugyldig, redirect til login
       if (typeof window !== 'undefined') {
-        document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+        document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Strict'
         const errorMsg = getErrorMessage(error)
         // Delay toast for å unngå at den vises etter redirect
         setTimeout(() => {

@@ -10,7 +10,7 @@ const Sentry = require('@sentry/node');
 const logger = require('./utils/logger');
 const { handleError } = require('./utils/errorHandler');
 const { sanitizeMiddleware } = require('./utils/sanitize');
-require('dotenv').config();
+require('dotenv').config({ path: ['.env', '../.env'] });
 
 // Importer routes
 const authRoutes = require('./routes/auth');
@@ -42,7 +42,29 @@ const limiter = rateLimit({
 // Error handling is hooked after route setup via setupExpressErrorHandler
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      connectSrc: ["'self'", "https://*.sentry.io", "https://*.ingest.de.sentry.io"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Required for image loading from uploads
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true,
+  },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+}));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://your-domain.com'] 
@@ -95,13 +117,17 @@ app.get('/test', (req, res) => {
 
 // Direkte rute for avvik-bilder (må være før 404-handleren)
 app.get('/uploads/avvik/:filename', (req, res) => {
-  const filename = req.params.filename;
+  const filename = path.basename(req.params.filename);
   const filePath = path.join(__dirname, 'uploads', 'avvik', filename);
   
-  // Sjekk om filen eksisterer
+  // Prevent path traversal
+  const avvikUploadsDir = path.join(__dirname, 'uploads', 'avvik');
+  if (!filePath.startsWith(avvikUploadsDir)) {
+    return res.status(400).json({ feil: 'Ugyldig filnavn' });
+  }
+  
   const fs = require('fs');
   if (fs.existsSync(filePath)) {
-    // Set riktig Content-Type for bilder
     const ext = path.extname(filename).toLowerCase();
     const mimeTypes = {
       '.jpg': 'image/jpeg',
@@ -113,9 +139,8 @@ app.get('/uploads/avvik/:filename', (req, res) => {
     
     const contentType = mimeTypes[ext] || 'application/octet-stream';
     res.setHeader('Content-Type', contentType);
-    res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache i 1 år
-    res.setHeader('Access-Control-Allow-Origin', '*'); // Tillat alle origins for bilder
-    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    res.setHeader('Cache-Control', 'public, max-age=31536000');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
     
     res.sendFile(filePath);
   } else {

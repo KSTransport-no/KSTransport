@@ -8,10 +8,9 @@ Sentry.init({
     'development',
   release: process.env.NEXT_PUBLIC_SENTRY_RELEASE || undefined,
 
-  // Performance
   tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+  profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
-  // Replay
   replaysSessionSampleRate:
     process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
   replaysOnErrorSampleRate: 1.0,
@@ -32,14 +31,15 @@ Sentry.init({
         url.searchParams.delete('token');
         url.searchParams.delete('password');
         event.request.url = url.toString();
-      } catch {}
+      } catch {
+        // ignore malformed URL
+      }
     }
 
     return event;
   },
 
   integrations: [
-    // ✅ NEW tracing
     Sentry.browserTracingIntegration({
       tracePropagationTargets: [
         'localhost',
@@ -47,19 +47,12 @@ Sentry.init({
         process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
       ],
     }),
-
-    // ✅ NEW replay
     Sentry.replayIntegration({
       maskAllText: false,
       blockAllMedia: false,
     }),
-
-    // ✅ NEW feedback button
     Sentry.feedbackIntegration({
       colorScheme: 'system',
-      // optional:
-      // showBranding: false,
-      // autoInject: true,
     }),
   ],
 });

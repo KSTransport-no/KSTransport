@@ -11,41 +11,48 @@ if (process.env.SENTRY_DSN_BACKEND) {
     dsn: process.env.SENTRY_DSN_BACKEND,
     environment: process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development',
     release: process.env.SENTRY_RELEASE || undefined,
-    
-    // Performance monitoring
-    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0, // 10% in prod, 100% in dev
-    
-    // Send structured logs to Sentry
-    enableLogs: true,
-    
-    // Setting this option to true will send default PII data to Sentry
-    // For example, automatic IP address collection on events
+
+    // Performance and profiles
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+
+    attachStacktrace: true,
+
+    // Send default PII where allowed by policy
     sendDefaultPii: true,
-    
-    // Filter out sensitive data
+
+    // Filter out dev/PII data
     beforeSend(event, hint) {
-      // Don't send events in development unless explicitly enabled
       if (process.env.NODE_ENV === 'development' && !process.env.SENTRY_ENABLE_DEV) {
         return null;
       }
-      
-      // Remove sensitive headers
-      if (event.request && event.request.headers) {
+
+      if (event.request?.headers) {
         delete event.request.headers.authorization;
         delete event.request.headers.cookie;
       }
-      
+
       return event;
     },
-    
-    // Integrations
+
+    tracesSampler(samplingContext) {
+      if (process.env.NODE_ENV !== 'production') {
+        return 1.0;
+      }
+      // You can have custom sampling rules here
+      const url = samplingContext.request?.url || '';
+      if (url.includes('/health')) {
+        return 0;
+      }
+      return 0.1;
+    },
+
     integrations: [
-      new Sentry.Integrations.Http({ tracing: true }),
-      new Sentry.Integrations.Express({ app: undefined }), // Will be set in server.js
+      ...(Sentry.expressIntegration ? [Sentry.expressIntegration()] : []),
     ],
   });
-  
-  console.log('Sentry initialized for backend');
+
+  console.log('Sentry initialized for backend (v10)');
 } else {
   console.log('Sentry DSN not provided, skipping initialization');
 }

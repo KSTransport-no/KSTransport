@@ -44,23 +44,15 @@ const nextConfig = {
   },
 };
 
-// Sentry configuration
+// Sentry configuration for @sentry/nextjs v10
 const sentryWebpackPluginOptions = {
-  // For all available options, see:
-  // https://github.com/getsentry/sentry-webpack-plugin#options
-
-  // Suppresses source map uploading logs during build
   silent: true,
-  
+
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
-  
-  // Only upload source maps in production
+
   widenClientFileUpload: true,
   hideSourceMaps: true,
-  disableClientWebpackPlugin: false,
-  disableServerWebpackPlugin: false,
-  automaticVercelMonitors: false,
 };
 
 // Make sure adding Sentry options is the last code to run before exporting

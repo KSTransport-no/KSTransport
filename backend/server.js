@@ -37,10 +37,8 @@ const limiter = rateLimit({
   legacyHeaders: false
 });
 
-// Sentry request handler must be the first middleware
-app.use(Sentry.Handlers.requestHandler());
-// TracingHandler creates a trace for every incoming request
-app.use(Sentry.Handlers.tracingHandler());
+// Sentry express integration is configured via Sentry.expressIntegration() in instrument.js
+// Error handling is hooked after route setup via setupExpressErrorHandler
 
 // Middleware
 app.use(helmet());
@@ -130,17 +128,17 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   lastModified: true
 }));
 
+// Sentry error handler must be after all routes but before other error handlers
+Sentry.setupExpressErrorHandler(app);
+
+// Global error handler (falls through from Sentry)
+app.use((error, req, res, next) => {
+  handleError(error, req, res, 'Global error handler');
+});
+
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ feil: 'Endepunkt ikke funnet' });
-});
-
-// Sentry error handler must be before other error handlers
-app.use(Sentry.Handlers.errorHandler());
-
-// Global error handler (falls through if Sentry doesn't handle it)
-app.use((error, req, res, next) => {
-  handleError(error, req, res, 'Global error handler');
 });
 
 // Håndter unhandled promise rejections

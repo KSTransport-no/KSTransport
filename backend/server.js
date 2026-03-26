@@ -160,7 +160,7 @@ if (process.env.NODE_ENV === 'development') {
 // Swagger API documentation
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
-app.use('/api-docs',
+app.use('/docs',
   helmet.contentSecurityPolicy({
     directives: {
       defaultSrc: ["'self'"],
@@ -176,7 +176,7 @@ app.use('/api-docs',
   })
 );
 // Serve raw spec as JSON
-app.get('/api-docs.json', (req, res) => {
+app.get('/docs.json', (req, res) => {
   res.json(swaggerSpec);
 });
 

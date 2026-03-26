@@ -1,6 +1,7 @@
 // Offline sync utility for syncing pending requests when online
 import { getPendingRequests, removeOfflineRequest, updateRetryCount } from './offlineStorage'
 import { logger } from './logger'
+import axios from 'axios'
 
 const MAX_RETRIES = 3
 const RETRY_DELAY = 5000 // 5 seconds
@@ -8,39 +9,33 @@ const RETRY_DELAY = 5000 // 5 seconds
 // Sync a single request
 async function syncRequest(request: any): Promise<boolean> {
   try {
-    const response = await fetch(request.url, {
+    await axios({
+      url: request.url,
       method: request.method,
       headers: request.headers,
-      body: request.body ? JSON.stringify(request.body) : undefined
+      data: request.body,
     })
 
-    if (response.ok) {
-      await removeOfflineRequest(request.id)
-      logger.log(`Successfully synced request: ${request.id}`)
-      return true
-    } else {
-      // If server error, increment retry count
-      const newRetries = request.retries + 1
-      if (newRetries >= MAX_RETRIES) {
-        // Max retries reached, remove from queue
-        await removeOfflineRequest(request.id)
-        logger.error(`Max retries reached for request: ${request.id}`)
-        return false
-      }
-      await updateRetryCount(request.id, newRetries)
-      logger.warn(`Request failed, retry ${newRetries}/${MAX_RETRIES}: ${request.id}`)
-      return false
-    }
-  } catch (error) {
-    // Network error, keep in queue
+    await removeOfflineRequest(request.id)
+    logger.log(`Successfully synced request: ${request.id}`)
+    return true
+  } catch (error: any) {
+    const hasResponse = !!error.response
     const newRetries = request.retries + 1
+
     if (newRetries >= MAX_RETRIES) {
       await removeOfflineRequest(request.id)
       logger.error(`Max retries reached for request: ${request.id}`)
       return false
     }
+
     await updateRetryCount(request.id, newRetries)
-    logger.warn(`Network error, retry ${newRetries}/${MAX_RETRIES}: ${request.id}`)
+
+    if (hasResponse) {
+      logger.warn(`Request failed, retry ${newRetries}/${MAX_RETRIES}: ${request.id}`)
+    } else {
+      logger.warn(`Network error, retry ${newRetries}/${MAX_RETRIES}: ${request.id}`)
+    }
     return false
   }
 }

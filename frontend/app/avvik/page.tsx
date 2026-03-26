@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import Cookies from 'js-cookie'
 import { logger } from '@/lib/logger'
-import { offlineFetch } from '@/lib/offlineApi'
+import api from '@/lib/api'
 import { useToast } from '@/hooks/use-toast'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -86,15 +85,8 @@ export default function AvvikPage() {
 
   const loadAvvik = async () => {
     try {
-      const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1]
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/avvik`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setAvvik(data)
-      }
+      const response = await api.get('/avvik')
+      setAvvik(response.data)
     } catch (error) {
       logger.error('Feil ved lasting av avvik:', error)
     }
@@ -186,48 +178,20 @@ export default function AvvikPage() {
     if (!editingAvvik) return
 
     try {
-      const token = Cookies.get('token')
-      if (!token) {
-        setMessage({ type: 'error', text: 'Ikke logget inn' })
-        return
-      }
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/avvik/${editingAvvik}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(editFormData)
-      })
-
-      if (response.ok) {
-        setMessage({ type: 'success', text: 'Avvik oppdatert!' })
-        loadAvvik()
-        cancelEditAvvik()
-      } else {
-        const errorData = await response.json()
-        setMessage({ type: 'error', text: errorData.feil || 'Feil ved oppdatering av avvik' })
-      }
-    } catch (error) {
+      await api.put(`/avvik/${editingAvvik}`, editFormData)
+      setMessage({ type: 'success', text: 'Avvik oppdatert!' })
+      loadAvvik()
+      cancelEditAvvik()
+    } catch (error: any) {
       logger.error('Feil ved oppdatering av avvik:', error)
-      setMessage({ type: 'error', text: 'Feil ved oppdatering av avvik' })
+      setMessage({ type: 'error', text: error.response?.data?.feil || 'Feil ved oppdatering av avvik' })
     }
   }
 
   const loadKommentarer = async (avvikId: number) => {
     try {
-      const token = Cookies.get('token')
-      if (!token) return
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/avvik/${avvikId}/kommentarer`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setKommentarer(prev => ({ ...prev, [avvikId]: data }))
-      }
+      const response = await api.get(`/avvik/${avvikId}/kommentarer`)
+      setKommentarer(prev => ({ ...prev, [avvikId]: response.data }))
     } catch (error) {
       logger.error('Feil ved henting av kommentarer:', error)
     }
@@ -238,32 +202,13 @@ export default function AvvikPage() {
     if (!kommentarTekst?.trim()) return
 
     try {
-      const token = Cookies.get('token')
-      if (!token) {
-        setMessage({ type: 'error', text: 'Ikke logget inn' })
-        return
-      }
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/avvik/${avvikId}/kommentarer`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ kommentar: kommentarTekst })
-      })
-
-      if (response.ok) {
-        setMessage({ type: 'success', text: 'Kommentar lagt til!' })
-        setNyKommentar(prev => ({ ...prev, [avvikId]: '' }))
-        loadKommentarer(avvikId)
-      } else {
-        const errorData = await response.json()
-        setMessage({ type: 'error', text: errorData.feil || 'Feil ved lagring av kommentar' })
-      }
-    } catch (error) {
+      await api.post(`/avvik/${avvikId}/kommentarer`, { kommentar: kommentarTekst })
+      setMessage({ type: 'success', text: 'Kommentar lagt til!' })
+      setNyKommentar(prev => ({ ...prev, [avvikId]: '' }))
+      loadKommentarer(avvikId)
+    } catch (error: any) {
       logger.error('Feil ved lagring av kommentar:', error)
-      setMessage({ type: 'error', text: 'Feil ved lagring av kommentar' })
+      setMessage({ type: 'error', text: error.response?.data?.feil || 'Feil ved lagring av kommentar' })
     }
   }
 
@@ -317,8 +262,6 @@ export default function AvvikPage() {
 
     setLoading(true)
     try {
-      const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1]
-      
       // Hvis det er et bilde, last det opp først
       // Last opp bilder hvis de finnes
       let uploadedImages: any[] = []
@@ -329,25 +272,18 @@ export default function AvvikPage() {
           formData.append('images', file)
         })
         
-        const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/avvik/multiple`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
-          body: formData
-        })
-        
-        logger.log('Upload response status:', uploadResponse.status)
-        
-        if (uploadResponse.ok) {
-          const uploadResult = await uploadResponse.json()
-          logger.log('Upload result:', uploadResult)
-          uploadedImages = uploadResult.files
-        } else {
-          const errorData = await uploadResponse.json()
-          logger.error('Upload error:', errorData)
+        try {
+          const uploadResponse = await api.post('/upload/avvik/multiple', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          })
+          logger.log('Upload result:', uploadResponse.data)
+          uploadedImages = uploadResponse.data.files
+        } catch (uploadError: any) {
+          logger.error('Upload error:', uploadError)
           toast({
             variant: 'destructive',
             title: 'Feil ved opplasting',
-            description: errorData.feil || 'Feil ved opplasting av bilder',
+            description: uploadError.response?.data?.feil || 'Feil ved opplasting av bilder',
           })
           setLoading(false)
           return
@@ -364,17 +300,8 @@ export default function AvvikPage() {
         requestBody.bilder = uploadedImages
       }
       
-      const response = await offlineFetch({
-        url: `${process.env.NEXT_PUBLIC_API_URL}/avvik`,
-        method: 'POST',
-        headers: { 
-          'Authorization': `Bearer ${token}`
-        },
-        body: requestBody,
-        type: 'avvik'
-      })
-
-      const result = await response.json()
+      const response = await api.post('/avvik', requestBody)
+      const result = response.data
       
       // Only reload if not offline
       if (!result.offline) {
@@ -388,7 +315,7 @@ export default function AvvikPage() {
         setShowDialog(false)
         loadAvvik()
       } else {
-        // Already shown by offlineFetch
+        // Already shown by Axios offline interceptor
         setNewAvvik({ type: '', beskrivelse: '', bilde: null, bilder: [] })
         setCapturedImages([])
         setShowDialog(false)

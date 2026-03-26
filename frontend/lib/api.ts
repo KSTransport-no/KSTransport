@@ -1,7 +1,9 @@
-import axios from 'axios'
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
 import React from 'react'
 import { getErrorMessage } from './errorMessages'
 import { toast } from '@/hooks/use-toast'
+import { saveOfflineRequest } from './offlineStorage'
+import { logger } from './logger'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
 
@@ -34,10 +36,54 @@ api.interceptors.request.use(
   }
 )
 
+// Determine request type from URL for offline storage categorization
+function getRequestType(url: string): 'skift' | 'avvik' | 'oppdrag' | 'other' {
+  if (url.includes('/skift') || url.includes('/tidregistrering')) return 'skift'
+  if (url.includes('/avvik')) return 'avvik'
+  if (url.includes('/oppdrag')) return 'oppdrag'
+  return 'other'
+}
+
 // Response interceptor for å håndtere feil
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error: AxiosError) => {
+    const config = error.config as InternalAxiosRequestConfig | undefined
+
+    // Offline queueing: if network error + offline + mutating request → save to IndexedDB
+    const isMutating = config && ['post', 'put', 'delete'].includes((config.method || '').toLowerCase())
+    const isOffline = typeof navigator !== 'undefined' && !navigator.onLine
+    const isNetworkError = !error.response // no response = network failure
+
+    if (isNetworkError && isOffline && isMutating && config) {
+      try {
+        const fullUrl = (config.baseURL || '') + (config.url || '')
+        const requestType = getRequestType(config.url || '')
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+        if (config.headers?.Authorization) {
+          headers['Authorization'] = String(config.headers.Authorization)
+        }
+        await saveOfflineRequest(fullUrl, config.method!.toUpperCase(), headers, config.data ? JSON.parse(config.data) : undefined, requestType)
+
+        toast({
+          variant: 'default',
+          title: 'Lagret offline',
+          description: 'Din handling er lagret lokalt og vil sendes når tilkoblingen gjenopprettes.',
+        })
+
+        // Return a resolved promise with a mock response so callers don't see an error
+        return {
+          data: { melding: 'Lagret offline - vil sendes når tilkoblingen gjenopprettes', offline: true },
+          status: 200,
+          statusText: 'OK (offline)',
+          headers: {},
+          config,
+        }
+      } catch (saveError) {
+        logger.error('Failed to save request offline:', saveError)
+      }
+    }
+
     // Ikke vis toast for 401 hvis vi allerede er på login-siden
     const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
     const isLoginPage = currentPath === '/login'

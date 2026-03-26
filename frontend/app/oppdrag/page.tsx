@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { offlineFetch } from '@/lib/offlineApi'
+import api from '@/lib/api'
 import { useToast } from '@/hooks/use-toast'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -39,8 +39,6 @@ export default function OppdragPage() {
 
     setLoading(true)
     try {
-      const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1]
-      
       const requestData = {
         fra: formData.fra.trim(),
         til: formData.til.trim(),
@@ -49,17 +47,8 @@ export default function OppdragPage() {
         kommentar: formData.kommentar.trim() || null
       }
 
-      const response = await offlineFetch({
-        url: `${process.env.NEXT_PUBLIC_API_URL}/data/oppdrag`,
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: requestData,
-        type: 'oppdrag'
-      })
-
-      const result = await response.json()
+      const response = await api.post('/data/oppdrag', requestData)
+      const result = response.data
       
       // Only redirect if not offline
       if (!result.offline) {
@@ -69,7 +58,7 @@ export default function OppdragPage() {
           description: `${result.melding} Du blir tatt til dashboardet...`,
         })
       } else {
-        // Already shown by offlineFetch
+        // Already shown by Axios offline interceptor
         setFormData({
           fra: '',
           til: '',

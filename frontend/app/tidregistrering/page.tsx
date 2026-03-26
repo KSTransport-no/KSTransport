@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { logger } from '@/lib/logger'
 import { useToast } from '@/hooks/use-toast'
 import { specificErrors } from '@/lib/errorMessages'
-import { offlineFetch } from '@/lib/offlineApi'
+import api from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -96,46 +96,15 @@ export default function TidregistreringPage() {
 
   const loadBiler = async () => {
     try {
-      const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1]
-      logger.log('Henter biler med token:', token ? 'present' : 'missing')
-      logger.log('API URL:', process.env.NEXT_PUBLIC_API_URL)
-      logger.log('Full URL:', `${process.env.NEXT_PUBLIC_API_URL}/data/biler`)
-      
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/data/biler`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-        logger.log('Biler response status:', response.status)
-        logger.log('Biler response headers:', response.headers)
-      
-      if (response.ok) {
-        const data = await response.json()
-          logger.log('Biler data:', data)
-          logger.log('Biler count:', data.length)
-        setBiler(data)
-          logger.log('Biler state oppdatert til:', data)
-      } else {
-        const error = await response.json()
-        logger.error('Feil ved henting av biler:', error)
-        toast({
-          variant: 'warning',
-          title: 'Kunne ikke laste biler',
-          description: error.feil || 'En feil oppstod ved henting av biler. Prøv å oppdatere siden.',
-          action: (
-            <button
-              onClick={() => window.location.reload()}
-              className="text-sm font-medium underline"
-            >
-              Oppdater
-            </button>
-          ) as any,
-        })
-      }
-    } catch (error) {
+      const response = await api.get('/data/biler')
+      logger.log('Biler data:', response.data)
+      setBiler(response.data)
+    } catch (error: any) {
       logger.error('Feil ved henting av biler:', error)
       toast({
         variant: 'warning',
         title: 'Kunne ikke laste biler',
-        description: 'En feil oppstod ved henting av biler. Prøv å oppdatere siden.',
+        description: error.response?.data?.feil || 'En feil oppstod ved henting av biler. Prøv å oppdatere siden.',
         action: (
           <button
             onClick={() => window.location.reload()}
@@ -150,15 +119,8 @@ export default function TidregistreringPage() {
 
   const loadKvoter = async () => {
     try {
-      const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1]
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/data/egenmelding-kvoter`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setEgenmeldingKvoter(data)
-      }
+      const response = await api.get('/data/egenmelding-kvoter')
+      setEgenmeldingKvoter(response.data)
     } catch (error) {
       logger.error('Feil ved henting av kvoter:', error)
     }
@@ -166,15 +128,8 @@ export default function TidregistreringPage() {
 
   const loadSgaKoder = async () => {
     try {
-      const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1]
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/data/sga-koder`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setSgaKoder(data)
-      }
+      const response = await api.get('/data/sga-koder')
+      setSgaKoder(response.data)
     } catch (error) {
       logger.error('Feil ved henting av SGA-koder:', error)
     }
@@ -276,8 +231,6 @@ export default function TidregistreringPage() {
 
     setLoading(true)
     try {
-      const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1]
-      
       // Debug formData
       logger.log('FormData før sending:', formData)
       logger.log('SelectedDate:', selectedDate)
@@ -330,17 +283,7 @@ export default function TidregistreringPage() {
           const startT = `${d}T00:00:00.000Z`
           const endT = `${d}T00:00:00.000Z`
           const body = { ...requestData, dato: d, start_tid: startT, slutt_tid: endT, registrering_type: formData.registrering_type }
-          const res = await offlineFetch({
-            url: `${process.env.NEXT_PUBLIC_API_URL}/data/tidregistrering`,
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
-            body,
-            type: 'skift'
-          })
-          if (!res.ok) {
-            const err = await res.json().catch(() => ({}))
-            throw new Error(err.feil || 'Feil ved lagring av periode')
-          }
+          await api.post('/data/tidregistrering', body)
         }
         toast({
           variant: 'success',
@@ -352,46 +295,9 @@ export default function TidregistreringPage() {
         return
       } else {
         // Opprett enkel registrering
-        const tidregistreringResponse = await offlineFetch({
-          url: `${process.env.NEXT_PUBLIC_API_URL}/data/tidregistrering`,
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: requestData,
-          type: 'skift'
-        })
-        
-        // Check if response is ok
-        if (!tidregistreringResponse.ok) {
-          try {
-            const error = await tidregistreringResponse.json()
-            throw new Error(error.feil || 'Feil ved lagring')
-          } catch (parseError) {
-            // If JSON parsing fails, throw a generic error
-            throw new Error(`Feil ved lagring: ${tidregistreringResponse.status} ${tidregistreringResponse.statusText}`)
-          }
-        }
-        
-        // Parse response
-        let result
-        try {
-          const responseText = await tidregistreringResponse.text()
-          logger.log('Response text:', responseText)
-          
-          if (responseText) {
-            result = JSON.parse(responseText)
-            logger.log('Parsed result:', result)
-          } else {
-            // If response is empty, assume success
-            logger.log('Response OK but empty, assuming success')
-            result = { melding: 'Tidregistrering lagret!', offline: false }
-          }
-        } catch (parseError) {
-          // If response is invalid JSON, but status was OK, assume success
-          logger.log('Response OK but invalid JSON, assuming success:', parseError)
-          result = { melding: 'Tidregistrering lagret!', offline: false }
-        }
+        const tidregistreringResponse = await api.post('/data/tidregistrering', requestData)
+        const result = tidregistreringResponse.data
+        logger.log('Parsed result:', result)
         
         // Only redirect if not offline
         if (!result.offline) {
@@ -434,7 +340,7 @@ export default function TidregistreringPage() {
             }, 2000)
           }
         } else {
-          // Already shown by offlineFetch
+          // Already shown by Axios offline interceptor
           setShowDialog(false)
           return
         }
@@ -450,7 +356,7 @@ export default function TidregistreringPage() {
       // If it's a network error, check if the shift was actually saved
       // by checking if we got a response before the error
       if (isNetworkError) {
-        // Don't show error for network errors - offlineFetch handles this
+        // Don't show error for network errors - Axios offline interceptor handles this
         logger.log('Network error detected, but operation may have succeeded')
         return
       }
@@ -477,7 +383,6 @@ export default function TidregistreringPage() {
     if (!selectedDate) return
     try {
       setLoading(true)
-      const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1]
       const dato = formatDateForAPI(selectedDate)
       const start = `${dato}T08:00:00.000Z`
       const slutt = `${dato}T15:30:00.000Z` // 7,5t
@@ -493,16 +398,9 @@ export default function TidregistreringPage() {
         slutt_tid: slutt,
         registrering_type: 'egenmelding_barn'
       }
-      const res = await offlineFetch({
-        url: `${process.env.NEXT_PUBLIC_API_URL}/data/tidregistrering`,
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body,
-        type: 'skift'
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err.feil || 'Feil ved lagring')
+      const res = await api.post('/data/tidregistrering', body)
+      if (res.data?.offline) {
+        return
       }
       toast({
         variant: 'success',

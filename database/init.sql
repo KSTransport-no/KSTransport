@@ -148,12 +148,13 @@ CREATE INDEX idx_forbedringsforslag_sjåfør ON forbedringsforslag(sjåfør_id);
 -- Innsetting av eksempeldata
 -- Passord for alle test-brukere: password123
 -- Passord for sindre@au11no.com: Cetla123
+-- Hashes generated with bcryptjs (Node.js) for compatibility
 INSERT INTO sjåfører (navn, epost, passord_hash, telefon, admin) VALUES
-('Ole Hansen', 'ole.hansen@kstransport.no', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '+47 123 45 678', false),
-('Kari Nordmann', 'kari.nordmann@kstransport.no', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '+47 987 65 432', false),
-('Lars Andersen', 'lars.andersen@kstransport.no', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '+47 555 12 345', false),
-('Admin Bruker', 'admin@kstransport.no', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '+47 000 00 000', true),
-('Sindre', 'sindre@au11no.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '+47 000 00 001', false)
+('Ole Hansen', 'ole.hansen@kstransport.no', '$2a$10$1TJH4t/7o1pix.KEsfVQCeM91gyvqc4HdbneCh2APA3MPXPLp7Rya', '+47 123 45 678', false),
+('Kari Nordmann', 'kari.nordmann@kstransport.no', '$2a$10$1TJH4t/7o1pix.KEsfVQCeM91gyvqc4HdbneCh2APA3MPXPLp7Rya', '+47 987 65 432', false),
+('Lars Andersen', 'lars.andersen@kstransport.no', '$2a$10$1TJH4t/7o1pix.KEsfVQCeM91gyvqc4HdbneCh2APA3MPXPLp7Rya', '+47 555 12 345', false),
+('Admin Bruker', 'admin@kstransport.no', '$2a$10$1TJH4t/7o1pix.KEsfVQCeM91gyvqc4HdbneCh2APA3MPXPLp7Rya', '+47 000 00 000', true),
+('Sindre', 'sindre@au11no.com', '$2a$10$rb8G9WFKIOr3Da0IWiHhDelvVfsImCkBG.MOfdDccq/pebrmQsKQ2', '+47 000 00 001', false)
 ON CONFLICT (epost) DO NOTHING;
 
 INSERT INTO biler (registreringsnummer, merke, modell, årsmodell) VALUES

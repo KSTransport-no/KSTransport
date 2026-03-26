@@ -593,4 +593,58 @@ router.put('/skift/:id/fakturer', authenticateToken, requireAdmin, async (req, r
   }
 });
 
+// Create time registration on behalf of a driver (admin only)
+router.post('/tidregistrering', authenticateToken, requireAdmin, [
+  body('sjåfør_id').isInt({ min: 1 }),
+  body('dato').isISO8601(),
+  body('registrering_type').optional().isIn(['arbeidstid', 'ferie', 'sykemelding', 'egenmelding', 'egenmelding_barn']),
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ feil: 'Ugyldig input', detaljer: errors.array() });
+    }
+
+    const { sjåfør_id, bil_id, sone, sendinger, vekt, pause, kommentarer, dato, start_tid, slutt_tid, registrering_type, bomtur_venting, sga_kode_id, sga_kode_annet } = req.body;
+
+    const type = registrering_type || 'arbeidstid';
+
+    let skiftDato = dato;
+    if (!skiftDato && start_tid) {
+      skiftDato = new Date(start_tid).toISOString().split('T')[0];
+    }
+    if (!skiftDato) {
+      skiftDato = new Date().toISOString().split('T')[0];
+    }
+
+    const result = await pool.query(`
+      INSERT INTO skift (
+        sjåfør_id, bil_id, sone, dato, start_tid, slutt_tid, 
+        pause_minutter, antall_sendinger, vekt, kommentarer, registrering_type, bomtur_venting, sga_kode_id, sga_kode_annet
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      RETURNING *
+    `, [
+      sjåfør_id,
+      bil_id || null,
+      sone || null,
+      skiftDato,
+      start_tid,
+      slutt_tid,
+      pause || 0,
+      sendinger || 0,
+      vekt || 0,
+      kommentarer || '',
+      type,
+      bomtur_venting || null,
+      sga_kode_id || null,
+      sga_kode_annet || null
+    ]);
+
+    logger.log(`Admin ${req.sjåfør.navn} created shift for driver ${sjåfør_id}`);
+    res.status(201).json({ melding: 'Tidregistrering lagret!', skift: result.rows[0] });
+  } catch (error) {
+    handleError(error, req, res, 'Admin: Create time registration on behalf endpoint');
+  }
+});
+
 module.exports = router;

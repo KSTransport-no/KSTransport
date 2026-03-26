@@ -587,6 +587,14 @@ export default function AdminPage() {
             </CardContent>
           </Card>
 
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/admin/sjafor-oversikt')}>
+            <CardContent className="p-3 sm:p-4 text-center">
+              <Clock className="h-8 sm:h-12 w-8 sm:w-12 text-teal-600 mx-auto mb-1 sm:mb-2" />
+              <h3 className="font-semibold text-xs sm:text-sm">Sjåfør-oversikt</h3>
+              <p className="text-xs text-gray-500 hidden sm:block">Oversikt og tidregistrering</p>
+            </CardContent>
+          </Card>
+
           <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/')}>
             <CardContent className="p-3 sm:p-4 text-center">
               <Calendar className="h-8 sm:h-12 w-8 sm:w-12 text-gray-600 mx-auto mb-1 sm:mb-2" />

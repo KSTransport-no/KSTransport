@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Truck, Clock, Calendar, AlertTriangle, Lightbulb, MapPin, Package, Pause, Scale, Edit, Save, X, Key, Cloud, CloudRain, Sun, CloudSnow, Navigation, AlertCircle, LogOut, CheckCircle, Shield } from 'lucide-react'
+import { Truck, Clock, Calendar, AlertTriangle, MapPin, Package, Pause, Scale, Edit, Save, X, Key, Cloud, CloudRain, Sun, CloudSnow, Navigation, AlertCircle, LogOut, CheckCircle, Shield } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 
 interface Skift {

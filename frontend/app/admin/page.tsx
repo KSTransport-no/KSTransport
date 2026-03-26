@@ -36,6 +36,7 @@ import {
   XCircle,
   Receipt
 } from 'lucide-react'
+import { NotificationBell } from '@/components/NotificationBell'
 
 interface Sjåfør {
   id: number
@@ -496,15 +497,18 @@ export default function AdminPage() {
                 <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
                   Admin Panel
                 </h1>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={logout}
-                  className="ml-2 flex items-center gap-1 text-xs sm:text-sm"
-                >
-                  <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span className="hidden sm:inline">Logg ut</span>
-                </Button>
+                <div className="flex items-center gap-2">
+                  <NotificationBell />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={logout}
+                    className="flex items-center gap-1 text-xs sm:text-sm"
+                  >
+                    <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Logg ut</span>
+                  </Button>
+                </div>
               </div>
               <p className="text-gray-600 text-xs sm:text-sm">
                 Administrer systemet og se oversikt

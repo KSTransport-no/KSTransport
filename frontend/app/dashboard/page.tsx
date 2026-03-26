@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Calendar, Clock, Truck, MapPin, Package, MessageSquare, AlertTriangle, Lightbulb } from 'lucide-react'
+import { NotificationBell } from '@/components/NotificationBell'
 
 interface Bil {
   id: number
@@ -231,9 +232,12 @@ export default function Dashboard() {
             <h1 className="text-2xl font-bold text-gray-900">KS Transport</h1>
             <p className="text-gray-600">Velkommen, {sjåfør.navn}</p>
           </div>
-          <Button onClick={logout} variant="outline">
-            Logg ut
-          </Button>
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <Button onClick={logout} variant="outline">
+              Logg ut
+            </Button>
+          </div>
         </div>
 
         {/* Message */}

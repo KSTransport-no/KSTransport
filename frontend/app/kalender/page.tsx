@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Calendar, Clock, Truck, MapPin, Package, ChevronLeft, ChevronRight, Scale, Edit, Key, LogOut, CheckCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { NotificationBell } from '@/components/NotificationBell'
 import CalendarComponent from 'react-calendar'
 import 'react-calendar/dist/Calendar.css'
 import './calendar.css'
@@ -528,6 +529,7 @@ export default function KalenderPage() {
             <Button variant="outline" onClick={() => window.location.href = '/'} className="w-full sm:w-auto text-sm sm:text-base">
               Tilbake til Dashboard
             </Button>
+            <NotificationBell />
             <Button variant="outline" onClick={logout} className="w-full sm:w-auto text-sm sm:text-base flex items-center gap-2">
               <LogOut className="h-4 w-4" />
               Logg ut

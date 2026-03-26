@@ -24,6 +24,7 @@ const uploadRoutes = require('./routes/upload');
 const infoRoutes = require('./routes/info');
 const trafikkRoutes = require('./routes/trafikk');
 const værRoutes = require('./routes/vær');
+const varslingerRoutes = require('./routes/varslinger');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -85,6 +86,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/info', infoRoutes);
 app.use('/api/trafikk', trafikkRoutes);
 app.use('/api/weather', værRoutes);
+app.use('/api/varslinger', varslingerRoutes);
 
 // Test-rute for å sjekke om serveren fungerer
 app.get('/test', (req, res) => {

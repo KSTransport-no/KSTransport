@@ -4,6 +4,7 @@ const pool = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
 const logger = require('../utils/logger');
 const { handleError } = require('../utils/errorHandler');
+const { notifyAdmins, notifyForslagComment } = require('../utils/notifications');
 
 const router = express.Router();
 
@@ -76,6 +77,16 @@ router.post('/', authenticateToken, [
     res.status(201).json({
       melding: 'Forbedringsforslag sendt vellykket',
       forbedringsforslag: result.rows[0]
+    });
+
+    // Notify admins about new forbedringsforslag
+    notifyAdmins({
+      type: 'nytt_forslag',
+      tittel: 'Nytt forbedringsforslag',
+      melding: `${req.sjåfør.navn} har sendt et nytt forbedringsforslag: "${tittel}".`,
+      lenke: '/admin/forbedringsforslag',
+      relatertType: 'forbedringsforslag',
+      relatertId: result.rows[0].id,
     });
   } catch (error) {
     handleError(error, req, res, 'Create improvement suggestion endpoint');
@@ -221,6 +232,12 @@ router.post('/:id/kommentarer', authenticateToken, [
       VALUES ($1, $2, $3)
       RETURNING *
     `, [id, req.sjåfør.id, kommentar]);
+
+    // Notify forslag owner if commenter is someone else
+    const forslag = forslagCheck.rows[0];
+    if (forslag.sjåfør_id !== req.sjåfør.id) {
+      notifyForslagComment(id, req.sjåfør.navn);
+    }
 
     res.status(201).json({
       melding: 'Kommentar lagt til',

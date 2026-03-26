@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { NotificationBell } from '@/components/NotificationBell'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { CalendarIcon, Clock, Truck, MapPin, Package, Pause, MessageSquare, Scale, LogOut } from 'lucide-react'
 
@@ -546,6 +547,7 @@ export default function TidregistreringPage() {
             <Button variant="outline" size="sm" onClick={() => window.location.href = '/'} className="flex-1 sm:flex-none">
               Tilbake
             </Button>
+            <NotificationBell />
             <Button variant="outline" size="sm" onClick={logout} className="flex items-center gap-1">
               <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Logg ut</span>

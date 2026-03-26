@@ -70,6 +70,7 @@ export default function AvvikPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest')
   const [expandedAvvik, setExpandedAvvik] = useState<number | null>(null)
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
   useEffect(() => {
     if (sjåfør) {

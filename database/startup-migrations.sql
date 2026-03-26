@@ -974,3 +974,32 @@ BEGIN
         RAISE NOTICE '✅ Alle kritiske tabeller eksisterer!';
     END IF;
 END $$;
+
+-- Migrasjon: Opprett varslinger (notifications) tabell
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM migrations WHERE name = 'add_varslinger_table') THEN
+
+        CREATE TABLE IF NOT EXISTS varslinger (
+            id SERIAL PRIMARY KEY,
+            mottaker_id INTEGER NOT NULL REFERENCES sjåfører(id) ON DELETE CASCADE,
+            type VARCHAR(50) NOT NULL,
+            tittel VARCHAR(255) NOT NULL,
+            melding TEXT NOT NULL,
+            lenke VARCHAR(500),
+            lest BOOLEAN DEFAULT false,
+            lest_dato TIMESTAMP,
+            relatert_type VARCHAR(50),
+            relatert_id INTEGER,
+            opprettet TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_varslinger_mottaker ON varslinger(mottaker_id, lest);
+        CREATE INDEX IF NOT EXISTS idx_varslinger_opprettet ON varslinger(opprettet DESC);
+
+        INSERT INTO migrations (name) VALUES ('add_varslinger_table');
+        RAISE NOTICE 'Migrasjon add_varslinger_table fullført';
+    ELSE
+        RAISE NOTICE 'Migrasjon add_varslinger_table allerede kjørt';
+    END IF;
+END $$;

@@ -4,6 +4,7 @@ const pool = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
 const logger = require('../utils/logger');
 const { handleError } = require('../utils/errorHandler');
+const { notifyAdmins, notifyAvvikComment } = require('../utils/notifications');
 
 const router = express.Router();
 
@@ -166,6 +167,16 @@ router.post('/', authenticateToken, [
       await client.query('COMMIT');
       logger.log('Avvik created:', avvik)
 
+      // Notify admins about new avvik
+      notifyAdmins({
+        type: 'nytt_avvik',
+        tittel: 'Nytt avvik registrert',
+        melding: `${req.sjåfør.navn} har registrert et nytt avvik: "${type}".`,
+        lenke: '/admin/avvik',
+        relatertType: 'avvik',
+        relatertId: avvik.id,
+      });
+
       res.status(201).json({
         melding: 'Avvik registrert vellykket',
         avvik: avvik
@@ -327,6 +338,12 @@ router.post('/:id/kommentarer', authenticateToken, [
       VALUES ($1, $2, $3)
       RETURNING *
     `, [id, req.sjåfør.id, kommentar]);
+
+    // Notify avvik owner if commenter is someone else
+    const avvik = avvikCheck.rows[0];
+    if (avvik.sjåfør_id !== req.sjåfør.id) {
+      notifyAvvikComment(id, req.sjåfør.navn);
+    }
 
     res.status(201).json({
       melding: 'Kommentar lagt til',

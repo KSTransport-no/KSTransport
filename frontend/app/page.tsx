@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Truck, Clock, Calendar, AlertTriangle, MapPin, Package, Pause, Scale, Edit, Save, X, Key, Cloud, CloudRain, Sun, CloudSnow, Navigation, AlertCircle, LogOut, CheckCircle, Shield } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { NotificationBell } from '@/components/NotificationBell'
 
 interface Skift {
   id: number
@@ -954,6 +955,7 @@ export default function HomePage() {
                   Velkommen, {sjåfør.navn}!
                 </h1>
                 <div className="flex items-center gap-2">
+                  <NotificationBell />
                   {sjåfør.admin && (
                     <Button
                       variant="outline"

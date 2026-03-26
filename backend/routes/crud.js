@@ -5,6 +5,7 @@ const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const logger = require('../utils/logger');
 const { handleError } = require('../utils/errorHandler');
 const cache = require('../utils/cache');
+const { notifyAvvikStatusChange, notifyAvvikComment, notifyForslagStatusChange, notifyForslagComment } = require('../utils/notifications');
 
 const router = express.Router();
 
@@ -521,6 +522,14 @@ router.put('/avvik/:id', authenticateToken, requireAdmin, [
       return res.status(404).json({ feil: 'Avvik ikke funnet' });
     }
 
+    // Notify user about status change or admin comment
+    if (status !== undefined) {
+      notifyAvvikStatusChange(id, status, req.sjåfør.navn);
+    }
+    if (admin_kommentar !== undefined) {
+      notifyAvvikComment(id, req.sjåfør.navn);
+    }
+
     res.json(result.rows[0]);
   } catch (error) {
     handleError(error, req, res, 'CRUD: Update incident endpoint');
@@ -574,6 +583,14 @@ router.put('/forbedringsforslag/:id', authenticateToken, requireAdmin, [
 
     if (result.rows.length === 0) {
       return res.status(404).json({ feil: 'Forbedringsforslag ikke funnet' });
+    }
+
+    // Notify user about status change or admin comment
+    if (status !== undefined) {
+      notifyForslagStatusChange(id, status, req.sjåfør.navn);
+    }
+    if (admin_kommentar !== undefined) {
+      notifyForslagComment(id, req.sjåfør.navn);
     }
 
     res.json(result.rows[0]);

@@ -10,6 +10,7 @@ import { Phone, Key, ArrowLeft, User, Calendar, Clock, Heart, Baby, Plane, Alert
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { NotificationBell } from '@/components/NotificationBell'
 
 interface InfoKort {
   id: number
@@ -305,15 +306,18 @@ export default function InfoPage() {
               <p className="text-sm text-gray-600">Telefonnumre og koder</p>
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={logout}
-            className="flex items-center gap-2"
-          >
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Logg ut</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={logout}
+              className="flex items-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Logg ut</span>
+            </Button>
+          </div>
         </div>
 
         {/* Tabs */}

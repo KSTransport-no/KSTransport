@@ -197,8 +197,8 @@ router.get('/registreringer', authenticateToken, requireAdmin, async (req, res) 
              b.modell,
              COALESCE(s.sone, so.navn) as sone_navn
       FROM skift s
-      JOIN sjåfører sj ON s.sjåfør_id = sj.id
-      JOIN biler b ON s.bil_id = b.id
+      LEFT JOIN sjåfører sj ON s.sjåfør_id = sj.id
+      LEFT JOIN biler b ON s.bil_id = b.id
       LEFT JOIN soner so ON s.sone_id = so.id
       WHERE 1=1
     `;

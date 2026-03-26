@@ -219,8 +219,14 @@ export default function SjåførerOversiktPage() {
         tilDato = formatDate(new Date(y, m + 1, 0))
       }
 
+      const params = new URLSearchParams({
+        fra_dato: fraDato,
+        til_dato: tilDato,
+        limit: '1000',
+      })
+      params.set('sjåfør_id', valgtSjåførId)
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/registreringer?sjåfør_id=${valgtSjåførId}&fra_dato=${fraDato}&til_dato=${tilDato}&limit=200`,
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/registreringer?${params.toString()}`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
       if (res.ok) {

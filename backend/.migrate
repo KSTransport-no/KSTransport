@@ -1,0 +1,6 @@
+{
+  "migrationsDir": "migrations",
+  "schema": "public",
+  "createSchema": true,
+  "createMigrationsSchema": true
+}

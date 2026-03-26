@@ -5,11 +5,14 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const morgan = require('morgan');
 const path = require('path');
 const Sentry = require('@sentry/node');
 const logger = require('./utils/logger');
 const { handleError } = require('./utils/errorHandler');
 const { sanitizeMiddleware } = require('./utils/sanitize');
+const pool = require('./config/database');
+const cache = require('./utils/cache');
 require('dotenv').config({ path: ['.env', '../.env'] });
 
 // Importer routes
@@ -78,13 +81,71 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(sanitizeMiddleware); // Sanitize all input
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+// Request logging
+if (process.env.NODE_ENV === 'production') {
+  // Structured JSON logs in production
+  morgan.token('user-id', (req) => req.sjåfør?.id || '-');
+  app.use(morgan(JSON.stringify({
+    method: ':method',
+    url: ':url',
+    status: ':status',
+    responseTime: ':response-time ms',
+    contentLength: ':res[content-length]',
+    userAgent: ':user-agent',
+    ip: ':remote-addr',
+    userId: ':user-id'
+  }), {
+    skip: (req) => req.url.startsWith('/health'),
+  }));
+} else {
+  app.use(morgan('dev', {
+    skip: (req) => req.url.startsWith('/health'),
+  }));
+}
+
+// Liveness probe – lightweight, no dependency checks
+app.get('/health/live', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// Readiness probe – checks DB connectivity, cache stats, memory
+app.get('/health/ready', async (req, res) => {
+  const checks = {};
+  let healthy = true;
+
+  // Database check
+  try {
+    const start = Date.now();
+    await pool.query('SELECT 1');
+    checks.database = { status: 'OK', responseTime: `${Date.now() - start}ms` };
+  } catch (err) {
+    checks.database = { status: 'ERROR', message: err.message };
+    healthy = false;
+  }
+
+  // Cache stats
+  checks.cache = cache.getStats();
+
+  // Process info
+  const mem = process.memoryUsage();
+  checks.process = {
+    uptime: `${Math.floor(process.uptime())}s`,
+    memoryRSS: `${Math.round(mem.rss / 1024 / 1024)}MB`,
+    memoryHeap: `${Math.round(mem.heapUsed / 1024 / 1024)}/${Math.round(mem.heapTotal / 1024 / 1024)}MB`,
+  };
+
+  checks.environment = process.env.NODE_ENV;
+
+  res.status(healthy ? 200 : 503).json({
+    status: healthy ? 'OK' : 'DEGRADED',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV 
+    checks,
   });
+});
+
+// Backward-compatible alias
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString(), environment: process.env.NODE_ENV });
 });
 
 // Reset rate limiting for development

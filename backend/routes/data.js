@@ -105,7 +105,7 @@ router.post('/tidregistrering', authenticateToken, async (req, res) => {
     
     // Sjekk egenmelding kvoter hvis det er egenmelding
     if (type === 'egenmelding' || type === 'egenmelding_barn') {
-      // Sjekk om sjåfør har vært ansatt i minst 6 måneder
+      // Sjekk om sjåfør har vært ansatt i minst 2 måneder
       const sjåførResult = await pool.query(
         'SELECT opprettet FROM sjåfører WHERE id = $1',
         [req.sjåfør.id]
@@ -117,11 +117,11 @@ router.post('/tidregistrering', authenticateToken, async (req, res) => {
       
       const opprettetDato = new Date(sjåførResult.rows[0].opprettet);
       const nå = new Date();
-      const seksMånederSiden = new Date(nå.getFullYear(), nå.getMonth() - 6, nå.getDate());
+      const toMånederSiden = new Date(nå.getFullYear(), nå.getMonth() - 2, nå.getDate());
       
-      if (opprettetDato > seksMånederSiden) {
+      if (opprettetDato > toMånederSiden) {
         return res.status(400).json({ 
-          feil: 'Du må ha vært ansatt i minst 6 måneder for å kunne bruke egenmelding' 
+          feil: 'Du må ha vært ansatt i minst 2 måneder for å kunne bruke egenmelding' 
         });
       }
       
@@ -272,7 +272,7 @@ router.post('/tidregistrering', authenticateToken, async (req, res) => {
 // Hent egenmelding kvoter for sjåfør
 router.get('/egenmelding-kvoter', authenticateToken, async (req, res) => {
   try {
-    // Sjekk om sjåfør har vært ansatt i minst 6 måneder
+    // Sjekk om sjåfør har vært ansatt i minst 2 måneder
     const sjåførResult = await pool.query(
       'SELECT opprettet FROM sjåfører WHERE id = $1',
       [req.sjåfør.id]
@@ -284,14 +284,14 @@ router.get('/egenmelding-kvoter', authenticateToken, async (req, res) => {
     
     const opprettetDato = new Date(sjåførResult.rows[0].opprettet);
     const nå = new Date();
-    const seksMånederSiden = new Date(nå.getFullYear(), nå.getMonth() - 6, nå.getDate());
-    const harAnsiennitet = opprettetDato <= seksMånederSiden;
+    const toMånederSiden = new Date(nå.getFullYear(), nå.getMonth() - 2, nå.getDate());
+    const harAnsiennitet = opprettetDato <= toMånederSiden;
     
     if (!harAnsiennitet) {
       return res.json({
         har_ansiennitet: false,
         kan_bruke_egenmelding: false,
-        melding: 'Du må ha vært ansatt i minst 6 måneder for å kunne bruke egenmelding'
+        melding: 'Du må ha vært ansatt i minst 2 måneder for å kunne bruke egenmelding'
       });
     }
     

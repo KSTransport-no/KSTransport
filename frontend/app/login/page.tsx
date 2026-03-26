@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { logger } from '@/lib/logger'
 import { Button } from '@/components/ui/button'
@@ -140,6 +141,12 @@ export default function LoginPage() {
                   'Logg inn'
                 )}
               </Button>
+
+              <div className="text-center">
+                <Link href="/login/glemt-passord" className="text-sm text-blue-600 hover:underline">
+                  Glemt passord?
+                </Link>
+              </div>
               
             </form>
           </CardContent>

@@ -59,6 +59,12 @@ services:
       SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-development}
       SENTRY_RELEASE: ${SENTRY_RELEASE:-1.0.0}
       TOMTOM_API_KEY: ${TOMTOM_API_KEY:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-noreply@kstransport.no}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3002}
     depends_on:
       migrations:
         condition: service_completed_successfully

@@ -157,6 +157,29 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
+// Swagger API documentation
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
+app.use('/api-docs',
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https://validator.swagger.io"],
+    },
+  }),
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'KS Transport API Docs',
+  })
+);
+// Serve raw spec as JSON
+app.get('/api-docs.json', (req, res) => {
+  res.json(swaggerSpec);
+});
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/skift', skiftRoutes);

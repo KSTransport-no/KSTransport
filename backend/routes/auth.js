@@ -1,12 +1,14 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const rateLimit = require("express-rate-limit");
 const { body, validationResult } = require("express-validator");
 const pool = require("../config/database");
 const { authenticateToken } = require("../middleware/auth");
 const logger = require("../utils/logger");
 const { handleError } = require("../utils/errorHandler");
+const { sendMail } = require("../utils/email");
 
 const router = express.Router();
 
@@ -232,6 +234,133 @@ router.put(
       res.json({ melding: "Profil oppdatert", sjåfør: result.rows[0] });
     } catch (error) {
       handleError(error, req, res, "Update profile endpoint");
+    }
+  },
+);
+
+// Rate limiter for reset requests
+const resetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  message: { feil: "For mange forespørsler. Prøv igjen om 15 minutter." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Request password reset — sends email with time-limited token
+router.post(
+  "/glemt-passord",
+  resetLimiter,
+  [body("epost").isEmail()],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ feil: "Ugyldig e-postadresse" });
+      }
+
+      const { epost } = req.body;
+
+      // Always return success to prevent email enumeration
+      const successMsg = { melding: "Hvis e-postadressen finnes, vil du motta en tilbakestillingslenke." };
+
+      const result = await pool.query(
+        "SELECT id, navn FROM sjåfører WHERE epost = $1 AND aktiv = true",
+        [epost],
+      );
+
+      if (result.rows.length === 0) {
+        return res.json(successMsg);
+      }
+
+      const sjåfør = result.rows[0];
+
+      // Invalidate any existing unused tokens for this user
+      await pool.query(
+        "UPDATE password_reset_tokens SET used = true WHERE sjåfør_id = $1 AND used = false",
+        [sjåfør.id],
+      );
+
+      // Generate a secure random token
+      const rawToken = crypto.randomBytes(32).toString("hex");
+      const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+      await pool.query(
+        "INSERT INTO password_reset_tokens (sjåfør_id, token_hash, expires_at) VALUES ($1, $2, $3)",
+        [sjåfør.id, tokenHash, expiresAt],
+      );
+
+      // Build reset URL
+      const baseUrl = process.env.FRONTEND_URL || "http://localhost:3002";
+      const resetUrl = `${baseUrl}/login/tilbakestill?token=${rawToken}`;
+
+      await sendMail({
+        to: epost,
+        subject: "Tilbakestill passord — KS Transport",
+        html: `
+          <h2>Hei ${sjåfør.navn},</h2>
+          <p>Vi mottok en forespørsel om å tilbakestille passordet ditt.</p>
+          <p><a href="${resetUrl}" style="display:inline-block;padding:12px 24px;background:#2563eb;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;">Tilbakestill passord</a></p>
+          <p>Lenken er gyldig i 1 time. Hvis du ikke ba om dette, kan du ignorere denne e-posten.</p>
+          <p style="color:#666;font-size:12px;">— KS Transport</p>
+        `,
+      });
+
+      res.json(successMsg);
+    } catch (error) {
+      handleError(error, req, res, "Password reset request endpoint");
+    }
+  },
+);
+
+// Reset password with token
+router.post(
+  "/tilbakestill-passord",
+  resetLimiter,
+  [
+    body("token").isLength({ min: 64, max: 64 }),
+    body("nyttPassord").isLength({ min: 6 }),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ feil: "Ugyldig input" });
+      }
+
+      const { token, nyttPassord } = req.body;
+      const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+      const result = await pool.query(
+        `SELECT prt.id, prt.sjåfør_id
+         FROM password_reset_tokens prt
+         JOIN sjåfører s ON s.id = prt.sjåfør_id AND s.aktiv = true
+         WHERE prt.token_hash = $1 AND prt.used = false AND prt.expires_at > NOW()`,
+        [tokenHash],
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(400).json({ feil: "Ugyldig eller utløpt tilbakestillingslenke" });
+      }
+
+      const { id: tokenId, sjåfør_id } = result.rows[0];
+
+      const newHash = await bcrypt.hash(nyttPassord, 10);
+
+      await pool.query(
+        "UPDATE sjåfører SET passord_hash = $1, sist_endret = CURRENT_TIMESTAMP WHERE id = $2",
+        [newHash, sjåfør_id],
+      );
+
+      await pool.query(
+        "UPDATE password_reset_tokens SET used = true WHERE id = $1",
+        [tokenId],
+      );
+
+      res.json({ melding: "Passordet er tilbakestilt. Du kan nå logge inn." });
+    } catch (error) {
+      handleError(error, req, res, "Password reset endpoint");
     }
   },
 );

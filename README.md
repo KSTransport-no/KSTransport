@@ -1,202 +1,169 @@
-# KSTransport - Tidregistreringsløsning
+# KS Transport
 
-En komplett Progressiv Web App (PWA) for tidregistrering av sjåfører innen lastebil/cargotransport.
+A full-stack Progressive Web App for shift tracking, incident reporting, and fleet management in the cargo/freight transport industry.
 
-## 🚛 Funksjoner
+## Tech Stack
 
-### For Sjåfører
-- **Pålogging** med e-post og passord
-- **Skiftregistrering** med start/slutt tid og pause
-- **Bilvalg** fra nedtrekksliste med registreringsnummer
-- **Sonevalg** for leveringsområder
-- **Sendinger** - registrering av antall sendinger
-- **Kommentarer** for hver registrering
-- **Avvikrapportering** med type og beskrivelse
-- **Forbedringsforslag** til ledelsen
-- **Kalendervisning** med oversikt over registrerte dager
-- **Daglig oversikt** med alle detaljer for valgt dag
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 14, React 18, TypeScript, Tailwind CSS, Radix UI / shadcn |
+| Backend | Node.js, Express 4, REST API |
+| Database | PostgreSQL 15 |
+| Auth | JWT (bcryptjs), email-based password reset |
+| Infra | Docker Compose, GitHub Actions CI |
+| Monitoring | Sentry (frontend + backend) |
+| API Docs | Swagger UI at `/api-docs` |
 
-### For Administratorer
-- **Adminvisning** med alle registreringer
-- **Filtrering** på sjåfør, dato, bil og sone
-- **Dataeksport** til CSV-format
-- **Avvikoversikt** og håndtering
-- **Forbedringsforslag** administrasjon
+## Features
 
-## 🛠️ Teknologi
+**Drivers**
+- Clock in/out with vehicle, zone, deliveries, weight, and comments
+- Multiple registration types: work shifts, vacation, sick leave, self-certification (egenmelding)
+- Incident reporting with photo uploads
+- Improvement suggestions
+- Calendar view with monthly overview
+- Real-time notifications
+- Offline mode with background sync
 
-- **Frontend**: React/Next.js med Tailwind CSS og ShadCN UI
-- **Backend**: Node.js/Express med REST API
-- **Database**: PostgreSQL
-- **PWA**: Service Worker, offline cache, "add to home screen"
-- **Containerisering**: Docker og Docker Compose
+**Admins**
+- Dashboard with all registrations (filterable, paginated)
+- Approve/reject shifts (single and bulk)
+- Manage drivers, vehicles, zones, SGA codes, and assignments
+- Incident and suggestion management with comments
+- Invoicing overview (mark shifts as billed)
+- CSV export for shifts, incidents, and suggestions
+- Info board (phone numbers and codes for drivers)
 
-## 📁 Prosjektstruktur
+**Platform**
+- Installable PWA with offline support and service worker
+- Live traffic data (TomTom API)
+- Weather data (Yr.no API)
+- Email notifications (SMTP via Nodemailer)
+- Automatic database migrations on startup
+
+## Project Structure
 
 ```
 KSTransport/
-├── backend/                 # Express API server
-│   ├── routes/             # API endepunkter
-│   ├── middleware/         # Autentisering og validering
-│   ├── config/             # Database konfigurasjon
-│   └── server.js           # Hovedserver fil
-├── frontend/               # Next.js React app
-│   ├── app/                # App router sider
-│   ├── components/         # React komponenter
-│   ├── contexts/           # React contexts
-│   ├── lib/                # Utility funksjoner
-│   └── public/             # Statiske filer og PWA assets
-├── database/               # Database skjema og migrasjoner
-│   └── init.sql            # Initial database setup
-├── docker-compose.yml      # Docker orchestration
-└── package.json           # Root package.json
+├── backend/
+│   ├── config/          # Database, Swagger spec
+│   ├── middleware/       # Auth, caching
+│   ├── routes/          # All API route handlers
+│   ├── utils/           # Logger, email, cache, sanitizer, error handler
+│   └── server.js
+├── frontend/
+│   ├── app/             # Next.js App Router pages
+│   ├── components/      # Reusable UI components
+│   ├── contexts/        # Auth & PWA contexts
+│   ├── hooks/           # Custom React hooks
+│   ├── lib/             # API client, offline sync, utilities
+│   └── public/          # Service worker, manifest
+├── database/
+│   ├── init.sql         # Initial schema
+│   └── startup-migrations.sql  # Auto-applied migrations
+├── .github/workflows/   # CI pipeline
+└── docker-compose.yml
 ```
 
-## 🚀 Kom i gang
+## Getting Started
 
-### Forutsetninger
-- Docker og Docker Compose
-- Node.js 18+ (for lokal utvikling)
+### Prerequisites
+- Docker and Docker Compose
+- Node.js 18+ (for local development without Docker)
 
-### Installasjon og kjøring
+### Quick Start
 
-1. **Klon prosjektet**
-   ```bash
-   git clone https://git.au11no.com/beetwenty/KSTransport.git
-   cd KSTransport
-   ```
-
-2. **Start med Docker Compose**
-   ```bash
-   # Bygg og start alle tjenester
-   docker-compose up --build
-   ```
-
-3. **Åpne applikasjonen**
-   - Frontend: http://localhost:3002
-   - Backend API: http://localhost:3001
-   - Database: localhost:5432
-
-### Demo påloggingsdetaljer
-- **E-post**: ole.hansen@kstransport.no
-- **Passord**: demo123
-
-## ✅ Implementerte funksjoner
-
-### Sjåfør-funksjoner
-- ✅ **Pålogging** med e-post og passord
-- ✅ **Dashboard** med oversikt over aktivt skift
-- ✅ **Skiftregistrering** - start/slutt med pause og sendinger
-- ✅ **Bil-velger** dropdown med registreringsnummer
-- ✅ **Sone-velger** dropdown
-- ✅ **Kommentarfelt** for skift
-- ✅ **Avvik-registrering** med type og beskrivelse
-- ✅ **Forbedringsforslag** med tittel og beskrivelse
-- ✅ **Kalender-visning** med månedsoverikt
-- ✅ **Dagvisning** med alle registreringer for valgt dag
-
-### Admin-funksjoner
-- ✅ **Admin-panel** med oversikt over alle data
-- ✅ **Sjåfører-oversikt** med status
-- ✅ **Biler-oversikt** med registreringsnummer
-- ✅ **Soner-oversikt** med beskrivelser
-- ✅ **Skift-oversikt** med alle registreringer
-- ✅ **Avvik-oversikt** med status
-- ✅ **Forbedringsforslag-oversikt** med admin-kommentarer
-- ✅ **Dataeksport** til CSV-format
-
-## 📱 PWA Funksjonalitet
-
-### Installering
-- Appen kan installeres som en native app på mobil og desktop
-- "Add to Home Screen" funksjonalitet
-- Standalone modus uten browser UI
-
-### Offline Støtte
-- Service Worker cacher viktige ressurser
-- Offline registrering av skift
-- Automatisk synkronisering når tilkobling gjenopprettes
-- Offline-indikator i UI
-
-## 🗄️ Database Skjema
-
-### Tabeller
-- **sjåfører** - Brukerinformasjon og autentisering
-- **biler** - Flåteinformasjon med registreringsnummer
-- **soner** - Leveringsområder
-- **skift** - Tidregistreringer med detaljer
-- **avvik** - Rapporterte problemer og avvik
-- **forbedringsforslag** - Forslag fra sjåfører
-
-## 🔧 Utvikling
-
-### Lokal utvikling
 ```bash
-# Start backend i utviklingsmodus
+git clone https://git.au11no.com/beetwenty/KSTransport.git
+cd KSTransport
+cp .env.example .env     # Edit with your values
+docker-compose up --build
+```
+
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:3002 |
+| Backend API | http://localhost:3001/api |
+| API Docs (Swagger) | http://localhost:3001/api-docs |
+| Adminer (DB UI) | http://localhost:8080 |
+
+### Demo Login
+- **Email**: ole.hansen@kstransport.no
+- **Password**: demo123
+
+### Local Development (without Docker)
+
+```bash
+# Backend
 cd backend
 npm install
-npm run dev
+npm run dev    # http://localhost:3001
 
-# Start frontend i utviklingsmodus (ny terminal)
+# Frontend (separate terminal)
 cd frontend
 npm install
-npm run dev
+npm run dev    # http://localhost:3002
 ```
 
-### Miljøvariabler
-Opprett `.env` filer i backend og frontend mapper:
+## Environment Variables
 
-**backend/.env**
-```
-NODE_ENV=development
-PORT=3001
-DATABASE_URL=postgresql://kstransport:kstransport123@localhost:5432/kstransport
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-JWT_EXPIRES_IN=24h
-```
+Copy `.env.example` to `.env` and configure:
 
-**frontend/.env.local**
-```
-NEXT_PUBLIC_API_URL=http://localhost:3001/api
-```
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `POSTGRES_PASSWORD` | Yes | — | Database password |
+| `JWT_SECRET` | Yes | — | Signing secret (64+ chars recommended) |
+| `POSTGRES_DB` | No | kstransport | Database name |
+| `POSTGRES_USER` | No | kstransport | Database user |
+| `NODE_ENV` | No | development | Environment mode |
+| `JWT_EXPIRES_IN` | No | 48h | Token lifetime |
+| `SMTP_HOST` | No | — | SMTP server (blank = log to console) |
+| `SMTP_PORT` | No | 587 | SMTP port |
+| `SMTP_USER` | No | — | SMTP username |
+| `SMTP_PASSWORD` | No | — | SMTP password |
+| `MAIL_FROM` | No | noreply@kstransport.no | Sender address |
+| `FRONTEND_URL` | No | http://localhost:3002 | Used in password reset emails |
+| `TOMTOM_API_KEY` | No | — | TomTom Traffic API key |
+| `SENTRY_DSN_BACKEND` | No | — | Backend Sentry DSN |
+| `NEXT_PUBLIC_SENTRY_DSN` | No | — | Frontend Sentry DSN |
 
-## 📊 API Endepunkter
+## API Overview
 
-### Autentisering
-- `POST /api/auth/login` - Pålogging
-- `GET /api/auth/me` - Hent brukerinfo
-- `PUT /api/auth/endre-passord` - Endre passord
+Full interactive docs available at `/api-docs` when the server is running. Key endpoint groups:
 
-### Skift
-- `GET /api/skift` - Hent alle skift for sjåfør
-- `POST /api/skift` - Opprett nytt skift
-- `PUT /api/skift/:id` - Oppdater skift
-- `DELETE /api/skift/:id` - Slett skift
+| Tag | Base Path | Description |
+|-----|-----------|-------------|
+| Auth | `/api/auth` | Login, profile, password change/reset |
+| Skift | `/api/skift` | Shift CRUD, start/stop active shift |
+| Avvik | `/api/avvik` | Incident reports with comments |
+| Forbedringsforslag | `/api/forbedringsforslag` | Improvement suggestions with comments |
+| Data | `/api/data` | Vehicles, zones, SGA codes, calendar, time registration |
+| Admin | `/api/admin` | All admin operations, approvals, invoicing, CSV export |
+| CRUD | `/api/crud` | Admin CRUD for drivers, vehicles, zones, assignments, SGA codes |
+| Upload | `/api/upload` | Image upload for incidents (single/multiple) |
+| Info | `/api/info` | Info board (phone numbers, codes) |
+| Varslinger | `/api/varslinger` | Notifications (read, mark read, delete) |
+| Trafikk | `/api/trafikk` | Live traffic data proxy (TomTom) |
+| Weather | `/api/weather` | Weather data proxy (Yr.no) |
 
-### Data
-- `GET /api/data/biler` - Hent alle biler
-- `GET /api/data/soner` - Hent alle soner
-- `GET /api/data/kalender` - Hent kalenderdata
+## Security
 
-### Avvik og Forbedringsforslag
-- `GET /api/avvik` - Hent avvik for sjåfør
-- `POST /api/avvik` - Rapporter avvik
-- `GET /api/forbedringsforslag` - Hent forslag
-- `POST /api/forbedringsforslag` - Send forslag
+- JWT authentication with bcrypt password hashing
+- Rate limiting (100 req/15min in production, 1000 in development)
+- Helmet.js security headers with strict CSP
+- Input sanitization on all endpoints
+- CORS with configurable origins
+- Path traversal protection on file uploads
+- Email enumeration prevention on password reset
+- Automatic database migrations (no manual SQL needed)
 
-### Admin
-- `GET /api/admin/registreringer` - Alle registreringer
-- `GET /api/admin/avvik` - Alle avvik
-- `GET /api/admin/eksporter` - Eksporter data til CSV
+## CI/CD
 
-## 🔒 Sikkerhet
+GitHub Actions runs on push to `main` and on pull requests:
 
-- JWT-basert autentisering
-- Passord hashing med bcrypt
-- Rate limiting på API endepunkter
-- Input validering og sanitization
-- CORS konfigurasjon
-- Helmet.js for sikkerhetsheaders
+1. **Backend** — install, migrate test DB, health check smoke test
+2. **Frontend** — install, lint (ESLint), build
+3. **Docker** — build both images (main branch only)
 
 ## 📱 Mobiloptimalisering
 

@@ -5,6 +5,9 @@ const { withSentryConfig } = require('@sentry/nextjs');
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
+  },
   async rewrites() {
     return [
       {

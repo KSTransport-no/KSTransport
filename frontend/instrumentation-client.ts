@@ -1,5 +1,7 @@
 import * as Sentry from '@sentry/nextjs';
 
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+
 const DSN =
   process.env.NEXT_PUBLIC_SENTRY_DSN ||
   'https://2a226ee2932a65e694d39d0c7aaed6ca@o4510398624890880.ingest.de.sentry.io/4510398671749200';

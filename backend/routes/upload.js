@@ -17,7 +17,12 @@ const IMAGE_SIGNATURES = [
 
 // Validate file content matches an actual image via magic bytes
 async function validateImageContent(filePath) {
-  const fd = await fs.promises.open(filePath, 'r');
+  // Guard against path traversal: resolved path must be inside avvikDir
+  const resolved = path.resolve(filePath);
+  if (!resolved.startsWith(avvikDir)) {
+    return null;
+  }
+  const fd = await fs.promises.open(resolved, 'r');
   try {
     const buf = Buffer.alloc(12);
     await fd.read(buf, 0, 12, 0);
@@ -38,7 +43,9 @@ async function validateImageContent(filePath) {
 
 // Delete file helper (best-effort, log on failure)
 function safeUnlink(filePath) {
-  try { fs.unlinkSync(filePath); } catch { /* ignore */ }
+  const resolved = path.resolve(filePath);
+  if (!resolved.startsWith(avvikDir)) return;
+  try { fs.unlinkSync(resolved); } catch { /* ignore */ }
 }
 
 const router = express.Router();
@@ -120,18 +127,20 @@ router.post('/avvik', authenticateToken, upload.single('image'), async (req, res
 // Upload flere bilder for avvik
 router.post('/avvik/multiple', authenticateToken, upload.array('images', 10), async (req, res) => {
   try {
+    const files = Array.isArray(req.files) ? req.files : [];
+
     logger.debug('Multiple upload request received', {
-      fileCount: req.files ? req.files.length : 0
+      fileCount: files.length
     });
 
-    if (!req.files || req.files.length === 0) {
+    if (files.length === 0) {
       logger.debug('No files uploaded');
       return res.status(400).json({ feil: 'Ingen filer ble lastet opp' });
     }
 
     // Validate all files via magic bytes, reject invalid ones
     const uploadedFiles = [];
-    for (const file of req.files) {
+    for (const file of files) {
       const type = await validateImageContent(file.path);
       if (!type) {
         safeUnlink(file.path);

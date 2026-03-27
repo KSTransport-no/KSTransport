@@ -10,10 +10,10 @@ import { Checkbox } from '@/components/ui/checkbox'
 interface Skift {
   id: number
   sjåfør_navn?: string
-  bil_registreringsnummer: string
+  bil_registreringsnummer?: string
   bil_merke?: string
   bil_modell?: string
-  sone_navn: string
+  sone_navn?: string
   dato: string
   start_tid: string
   slutt_tid?: string

@@ -82,7 +82,7 @@ export async function registerBackgroundSync(): Promise<void> {
   if ('serviceWorker' in navigator && 'sync' in ServiceWorkerRegistration.prototype) {
     try {
       const registration = await navigator.serviceWorker.ready
-      await registration.sync.register('sync-pending-requests')
+      await (registration as unknown as { sync: { register: (tag: string) => Promise<void> } }).sync.register('sync-pending-requests')
       logger.log('Background sync registered')
     } catch (error) {
       logger.error('Failed to register background sync:', error)

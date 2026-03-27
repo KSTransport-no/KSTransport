@@ -1753,10 +1753,9 @@ export default function HomePage() {
                     variant="outline"
                     size="sm"
                     onClick={() => loadWeatherData()}
-                    disabled={loadingWeather}
                     className="mt-2"
                   >
-                    {loadingWeather ? 'Laster...' : 'Prøv igjen'}
+                    Prøv igjen
                   </Button>
                 </div>
               )}

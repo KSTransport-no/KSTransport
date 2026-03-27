@@ -141,27 +141,24 @@ router.post('/', authenticateToken, [
 
       const avvik = result.rows[0];
 
-      // Legg til bilder hvis de finnes
+      // Legg til bilder hvis de finnes (bulk insert forhindrer N+1 queries)
       if (bilder && bilder.length > 0) {
-        // Bulk insert av bilder (forhindrer N+1 queries)
-        if (bilder && bilder.length > 0) {
-          const bilderValues = bilder.map((bilde, index) => {
-            const baseIndex = index * 4;
-            return `($${baseIndex + 1}, $${baseIndex + 2}, $${baseIndex + 3}, $${baseIndex + 4})`;
-          }).join(', ');
-          
-          const bilderParams = bilder.flatMap(bilde => [
-            avvik.id,
-            bilde.url,
-            bilde.originalname,
-            bilde.size
-          ]);
-          
-          await client.query(`
-            INSERT INTO avvik_bilder (avvik_id, bilde_url, bilde_navn, bilde_størrelse)
-            VALUES ${bilderValues}
-          `, bilderParams);
-        }
+        const bilderValues = bilder.map((bilde, index) => {
+          const baseIndex = index * 4;
+          return `($${baseIndex + 1}, $${baseIndex + 2}, $${baseIndex + 3}, $${baseIndex + 4})`;
+        }).join(', ');
+        
+        const bilderParams = bilder.flatMap(bilde => [
+          avvik.id,
+          bilde.url,
+          bilde.originalname,
+          bilde.size
+        ]);
+        
+        await client.query(`
+          INSERT INTO avvik_bilder (avvik_id, bilde_url, bilde_navn, bilde_størrelse)
+          VALUES ${bilderValues}
+        `, bilderParams);
       }
 
       await client.query('COMMIT');

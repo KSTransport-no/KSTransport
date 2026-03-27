@@ -17,7 +17,19 @@ const IMAGE_SIGNATURES = [
 
 // Validate file content matches an actual image via magic bytes
 async function validateImageContent(filePath) {
-  const fd = await fs.promises.open(filePath, 'r');
+  // Ensure that the filePath resolves within the uploads directory
+  const resolvedPath = path.resolve(uploadsDir, filePath);
+  let normalizedPath;
+  try {
+    normalizedPath = fs.realpathSync(resolvedPath);
+  } catch {
+    throw new Error('Invalid upload path');
+  }
+  if (!normalizedPath.startsWith(uploadsDir + path.sep) && normalizedPath !== uploadsDir) {
+    throw new Error('Invalid upload path');
+  }
+
+  const fd = await fs.promises.open(normalizedPath, 'r');
   try {
     const buf = Buffer.alloc(12);
     await fd.read(buf, 0, 12, 0);

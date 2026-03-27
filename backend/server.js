@@ -74,9 +74,9 @@ app.use(helmet({
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-domain.com'] 
-    : true, // Allow all origins in development
+  origin: process.env.NODE_ENV === 'production'
+    ? (process.env.FRONTEND_URL || 'https://your-domain.com').split(',')
+    : [process.env.FRONTEND_URL || 'http://localhost:3002'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']

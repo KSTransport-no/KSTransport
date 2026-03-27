@@ -1,6 +1,7 @@
-// Cache versjon med timestamp for bedre cache-busting
-const CACHE_TIMESTAMP = new Date().getTime();
-const CACHE_VERSION = "v1.0.1-" + CACHE_TIMESTAMP;
+// Cache version — update this value when deploying new assets.
+// The browser only re-installs the SW when sw.js content changes,
+// so changing this string is enough to bust the cache on deploy.
+const CACHE_VERSION = "v1.0.3";
 const CACHE_NAME = `kstransport-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline";
 

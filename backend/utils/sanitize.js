@@ -22,7 +22,7 @@ const sanitizeString = (input) => {
     /javascript:/gi,
     /data:/gi,
     /vbscript:/gi,
-    /on\w+=/gi,
+    /on[a-z]{1,20}=/gi,
   ];
   let prev;
   do {

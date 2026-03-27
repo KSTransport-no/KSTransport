@@ -22,6 +22,12 @@ Sentry.init({
 
   sendDefaultPii: true,
 
+  tracePropagationTargets: [
+    'localhost',
+    /^https:\/\/.*\.ingest\.sentry\.io/,
+    process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+  ],
+
   // Logs
   enableLogs: true,
 
@@ -41,13 +47,7 @@ Sentry.init({
   },
 
   integrations: [
-    Sentry.browserTracingIntegration({
-      tracePropagationTargets: [
-        'localhost',
-        /^https:\/\/.*\.ingest\.sentry\.io/,
-        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
-      ],
-    }),
+    Sentry.browserTracingIntegration(),
     Sentry.replayIntegration({
       maskAllText: false,
       blockAllMedia: false,

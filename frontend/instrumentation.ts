@@ -49,6 +49,7 @@ export async function register() {
   }
 
   if (process.env.NEXT_RUNTIME === 'edge') {
+
     Sentry.init({
       dsn: DSN,
       environment:
@@ -65,3 +66,5 @@ export async function register() {
     });
   }
 }
+
+export const onRequestError = Sentry.captureRequestError;

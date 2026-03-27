@@ -26,13 +26,15 @@ export function VirtualizedList<T>({
   overscanCount = 5
 }: VirtualizedListProps<T>) {
   const Row = useMemo(() => {
-    return ({ index, style }: { index: number; style: React.CSSProperties }) => {
+    const RowComponent = ({ index, style }: { index: number; style: React.CSSProperties }) => {
       const item = items[index]
       if (!item) {
         return null
       }
       return <div style={style}>{renderItem(item, index, style)}</div>
     }
+    RowComponent.displayName = 'VirtualizedListRow'
+    return RowComponent
   }, [items, renderItem])
 
   if (items.length === 0) {

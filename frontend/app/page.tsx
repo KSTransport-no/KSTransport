@@ -1445,7 +1445,7 @@ export default function HomePage() {
                             {skift.kommentarer && (
                               <div className="mt-3 pt-3 border-t border-gray-100">
                                 <p className="text-sm text-gray-600 italic">
-                                  "{skift.kommentarer}"
+                                  &ldquo;{skift.kommentarer}&rdquo;
                                 </p>
                               </div>
                             )}
@@ -1472,7 +1472,7 @@ export default function HomePage() {
                                   <span className="text-sm font-medium text-orange-700">Bomtur/Venting:</span>
                                 </div>
                                 <p className="text-sm text-orange-600 italic">
-                                  "{skift.bomtur_venting}"
+                                  &ldquo;{skift.bomtur_venting}&rdquo;
                                 </p>
                               </div>
                             )}

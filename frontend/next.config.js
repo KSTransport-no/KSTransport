@@ -4,10 +4,9 @@ const { withSentryConfig } = require('@sentry/nextjs');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
+  serverExternalPackages: ['@sentry/profiling-node'],
   experimental: {
     optimizePackageImports: ['lucide-react'],
-    serverComponentsExternalPackages: ['@sentry/profiling-node'],
   },
   async rewrites() {
     return [

@@ -96,12 +96,12 @@ function filtrerSkiftHelper(
 
   // Sjåfør filter
   if (sjåførFilter !== 'alle') {
-    filtrerte = filtrerte.filter(s => s.sjåfør_id.toString() === sjåførFilter)
+    filtrerte = filtrerte.filter(s => s.sjåfør_id?.toString() === sjåførFilter)
   }
 
   // Bil filter
   if (bilFilter !== 'alle') {
-    filtrerte = filtrerte.filter(s => s.bil_id.toString() === bilFilter)
+    filtrerte = filtrerte.filter(s => s.bil_id?.toString() === bilFilter)
   }
 
   // Dato filter
@@ -176,12 +176,12 @@ export default function SkiftPage() {
 
     // Sjåfør filter
     if (sjåførFilter !== 'alle') {
-      filtrerte = filtrerte.filter(s => s.sjåfør_id.toString() === sjåførFilter)
+      filtrerte = filtrerte.filter(s => s.sjåfør_id?.toString() === sjåførFilter)
     }
 
     // Bil filter
     if (bilFilter !== 'alle') {
-      filtrerte = filtrerte.filter(s => s.bil_id.toString() === bilFilter)
+      filtrerte = filtrerte.filter(s => s.bil_id?.toString() === bilFilter)
     }
 
     // Dato filter

@@ -5,7 +5,7 @@ const CACHE_VERSION = "v1.0.3";
 const CACHE_NAME = `kstransport-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline";
 
-// Filer som skal caches
+// Files to cache
 const urlsToCache = [
   "/",
   "/login",
@@ -15,7 +15,7 @@ const urlsToCache = [
   "/offline",
 ];
 
-// Install event - cache ressurser
+// Install event - cache resources
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
@@ -27,11 +27,11 @@ self.addEventListener("install", (event) => {
         console.error("Service Worker: Cache install failed:", error);
       }),
   );
-  // Aktivér umiddelbart
+  // Activate immediately
   self.skipWaiting();
 });
 
-// Activate event - rydd opp i gamle caches
+// Activate event - clean up old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
@@ -39,7 +39,7 @@ self.addEventListener("activate", (event) => {
       .then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            // Slett alle caches som ikke er den nye
+            // Delete all caches that are not the current one
             if (!cacheName.startsWith(`kstransport-${CACHE_VERSION}`)) {
               return caches.delete(cacheName);
             }
@@ -52,9 +52,9 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// Fetch event - serve fra cache eller network
+// Fetch event - serve from cache or network
 self.addEventListener("fetch", (event) => {
-  // Håndter kun GET requests
+  // Handle only GET requests
   if (event.request.method !== "GET") {
     return;
   }
@@ -147,8 +147,8 @@ self.addEventListener("fetch", (event) => {
     url.pathname.includes(".gif") ||
     url.pathname.includes(".svg")
   ) {
-    // For statiske filer, legg til timestamp for cache-busting
-    url.searchParams.set("v", CACHE_TIMESTAMP.toString());
+    // For static files, add version for cache-busting
+    url.searchParams.set("v", CACHE_VERSION);
     const cacheBustedRequest = new Request(url.toString(), event.request);
 
     event.respondWith(

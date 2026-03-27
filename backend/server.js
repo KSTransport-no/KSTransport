@@ -32,6 +32,28 @@ const varslingerRoutes = require('./routes/varslinger');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Configure rate limiting from environment variables with sensible defaults
+const RATE_LIMIT_WINDOW_MS = process.env.RATE_LIMIT_WINDOW_MS
+  ? parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10)
+  : 15 * 60 * 1000; // default: 15 minutes
+
+const RATE_LIMIT_MAX = (() => {
+  // Allow overriding max requests for different environments
+  const isDev = process.env.NODE_ENV === 'development';
+  const envValue = isDev
+    ? process.env.RATE_LIMIT_MAX_DEV || process.env.RATE_LIMIT_MAX
+    : process.env.RATE_LIMIT_MAX;
+
+  const parsed = envValue ? parseInt(envValue, 10) : NaN;
+
+  if (!Number.isNaN(parsed) && parsed > 0) {
+    return parsed;
+  }
+
+  // Fallbacks preserve existing behavior
+  return isDev ? 1000 : 300;
+})();
+
 // Trust proxy when behind reverse proxy (Docker/Nginx)
 if (process.env.NODE_ENV === 'production') {
   app.set('trust proxy', 1);
@@ -39,8 +61,8 @@ if (process.env.NODE_ENV === 'production') {
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutter
-  max: process.env.NODE_ENV === 'development' ? 1000 : 300, // 300 per 15 min — SPA pages fire many parallel API calls
+  windowMs: RATE_LIMIT_WINDOW_MS, // default: 15 minutes
+  max: RATE_LIMIT_MAX, // default: 1000 in dev, 300 otherwise — configurable via env
   message: { feil: 'For mange forespørsler, prøv igjen senere' },
   standardHeaders: true,
   legacyHeaders: false

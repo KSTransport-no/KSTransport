@@ -29,9 +29,9 @@ import {
 
 interface Skift {
   id: number
-  sjåfør_id: number
-  bil_id: number
-  sone_id: number
+  sjåfør_id?: number
+  bil_id?: number
+  sone_id?: number
   dato: string
   start_tid: string
   slutt_tid?: string

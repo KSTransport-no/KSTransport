@@ -199,6 +199,11 @@ app.get('/test', (req, res) => {
   res.json({ melding: 'Server fungerer!' });
 });
 
+// Sentry verification route
+app.get('/debug-sentry', function mainHandler(req, res) {
+  throw new Error('My first Sentry error!');
+});
+
 // Direkte rute for avvik-bilder (må være før 404-handleren)
 app.get('/uploads/avvik/:filename', (req, res) => {
   const filename = path.basename(req.params.filename);

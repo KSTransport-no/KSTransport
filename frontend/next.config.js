@@ -7,6 +7,7 @@ const nextConfig = {
   swcMinify: true,
   experimental: {
     optimizePackageImports: ['lucide-react'],
+    serverComponentsExternalPackages: ['@sentry/profiling-node'],
   },
   async rewrites() {
     return [

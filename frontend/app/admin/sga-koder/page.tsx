@@ -71,7 +71,7 @@ export default function SgaKoderPage() {
         const data = await response.json()
         setSgaKoder(data)
       } else {
-        logger.error('Feil ved henting av SGA-koder:', response.status, await response.text())
+        logger.error(`Feil ved henting av SGA-koder: ${response.status} ${await response.text()}`)
         setMessage({ type: 'error', text: 'Feil ved henting av SGA-koder' })
       }
     } catch (error) {

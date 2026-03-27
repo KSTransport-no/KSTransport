@@ -68,7 +68,7 @@ export default function SjåførerPage() {
         const data = await response.json()
         setSjåfører(data)
       } else {
-        logger.error('Feil ved henting av sjåfører:', response.status, await response.text())
+        logger.error(`Feil ved henting av sjåfører: ${response.status} ${await response.text()}`)
       }
     } catch (error) {
       logger.error('Feil ved lasting av sjåfører:', error)

@@ -67,7 +67,7 @@ export default function BilerPage() {
         const data = await response.json()
         setBiler(data)
       } else {
-        logger.error('Feil ved henting av biler:', response.status, await response.text())
+        logger.error(`Feil ved henting av biler: ${response.status} ${await response.text()}`)
       }
     } catch (error) {
       logger.error('Feil ved lasting av biler:', error)

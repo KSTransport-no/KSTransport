@@ -147,7 +147,7 @@ export default function TidregistreringPage() {
     e.preventDefault()
     
     logger.log('handleSubmit kalt med formData:', formData)
-    logger.log('Validering - bil_id:', formData.bil_id, 'sone:', formData.sone, 'sendinger:', formData.sendinger, 'pause:', formData.pause, 'start_tid:', formData.start_tid, 'slutt_tid:', formData.slutt_tid)
+    logger.log(`Validering - bil_id: ${formData.bil_id}, sone: ${formData.sone}, sendinger: ${formData.sendinger}, pause: ${formData.pause}, start_tid: ${formData.start_tid}, slutt_tid: ${formData.slutt_tid}`)
     
     // Validering avhengig av registreringstype
     if (formData.registrering_type === 'arbeidstid') {

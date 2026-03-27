@@ -75,7 +75,7 @@ export default function OppdragPage() {
         const data = await response.json()
         setOppdrag(data)
       } else {
-        logger.error('Feil ved henting av oppdrag:', response.status, await response.text())
+        logger.error(`Feil ved henting av oppdrag: ${response.status} ${await response.text()}`)
       }
     } catch (error) {
       logger.error('Feil ved lasting av oppdrag:', error)

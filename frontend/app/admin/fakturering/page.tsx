@@ -85,7 +85,7 @@ export default function FaktureringPage() {
         const data = await response.json()
         setSkift(data)
       } else {
-        logger.error('Feil ved henting av faktureringsskift:', response.status, await response.text())
+        logger.error(`Feil ved henting av faktureringsskift: ${response.status} ${await response.text()}`)
         setMessage({ type: 'error', text: 'Feil ved henting av faktureringsskift' })
       }
     } catch (error) {

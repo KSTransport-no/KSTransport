@@ -226,7 +226,7 @@ export default function SkiftPage() {
         const skiftData = await skiftRes.json()
         setSkift(skiftData)
       } else {
-        logger.error('Feil ved henting av skift:', skiftRes.status, await skiftRes.text())
+        logger.error(`Feil ved henting av skift: ${skiftRes.status} ${await skiftRes.text()}`)
         setMessage({ type: 'error', text: 'Feil ved henting av skift' })
       }
       

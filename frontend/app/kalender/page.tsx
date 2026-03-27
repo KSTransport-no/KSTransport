@@ -238,7 +238,7 @@ export default function KalenderPage() {
           logger.log('Skift data fra backend:', skift)
         setSelectedDag({ dato, antall_skift: skift.length, skift })
       } else {
-          logger.error('Response ikke OK:', response.status, response.statusText)
+          logger.error(`Response ikke OK: ${response.status} ${response.statusText}`)
       }
     } catch (error) {
       logger.error('Feil ved lasting av dagdetaljer:', error)

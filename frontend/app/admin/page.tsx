@@ -220,7 +220,7 @@ export default function AdminPage() {
         logger.log('Sjåfører data:', sjåførerData)
         setSjåfører(sjåførerData)
       } else {
-        logger.error('Feil ved henting av sjåfører:', sjåførerRes.status, await sjåførerRes.text())
+        logger.error(`Feil ved henting av sjåfører: ${sjåførerRes.status} ${await sjåførerRes.text()}`)
       }
       
       if (bilerRes.ok) {
@@ -228,7 +228,7 @@ export default function AdminPage() {
         logger.log('Biler data:', bilerData)
         setBiler(bilerData)
       } else {
-        logger.error('Feil ved henting av biler:', bilerRes.status, await bilerRes.text())
+        logger.error(`Feil ved henting av biler: ${bilerRes.status} ${await bilerRes.text()}`)
       }
       
       if (skiftRes.ok) {
@@ -236,7 +236,7 @@ export default function AdminPage() {
         logger.log('Skift data:', skiftData)
         setSkift(skiftData)
       } else {
-        logger.error('Feil ved henting av skift:', skiftRes.status, await skiftRes.text())
+        logger.error(`Feil ved henting av skift: ${skiftRes.status} ${await skiftRes.text()}`)
       }
       
       if (avvikRes.ok) {
@@ -244,7 +244,7 @@ export default function AdminPage() {
         logger.log('Avvik data:', avvikData)
         setAvvik(avvikData)
       } else {
-        logger.error('Feil ved henting av avvik:', avvikRes.status, await avvikRes.text())
+        logger.error(`Feil ved henting av avvik: ${avvikRes.status} ${await avvikRes.text()}`)
       }
       
       if (forslagRes.ok) {
@@ -252,7 +252,7 @@ export default function AdminPage() {
         logger.log('Forslag data:', forslagData)
         setForbedringsforslag(forslagData)
       } else {
-        logger.error('Feil ved henting av forslag:', forslagRes.status, await forslagRes.text())
+        logger.error(`Feil ved henting av forslag: ${forslagRes.status} ${await forslagRes.text()}`)
       }
       
       if (infoRes.ok) {
@@ -260,7 +260,7 @@ export default function AdminPage() {
         logger.log('Info data:', infoData)
         setInfoKort(infoData)
       } else {
-        logger.error('Feil ved henting av info-kort:', infoRes.status, await infoRes.text())
+        logger.error(`Feil ved henting av info-kort: ${infoRes.status} ${await infoRes.text()}`)
       }
     } catch (error) {
       logger.error('Feil ved lasting av admin data:', error)

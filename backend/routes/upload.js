@@ -17,28 +17,13 @@ const IMAGE_SIGNATURES = [
 
 // Validate file content matches an actual image via magic bytes
 async function validateImageContent(filePath) {
-<<<<<<< HEAD
-  // Guard against path traversal: resolved path must be inside avvikDir
+  // Guard against path traversal: resolved path must stay inside avvikDir
   const resolved = path.resolve(filePath);
-  if (!resolved.startsWith(avvikDir)) {
+  const relative = path.relative(avvikDir, resolved);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
     return null;
   }
   const fd = await fs.promises.open(resolved, 'r');
-=======
-  // Ensure that the filePath resolves within the uploads directory
-  const resolvedPath = path.resolve(uploadsDir, filePath);
-  let normalizedPath;
-  try {
-    normalizedPath = fs.realpathSync(resolvedPath);
-  } catch {
-    throw new Error('Invalid upload path');
-  }
-  if (!normalizedPath.startsWith(uploadsDir + path.sep) && normalizedPath !== uploadsDir) {
-    throw new Error('Invalid upload path');
-  }
-
-  const fd = await fs.promises.open(normalizedPath, 'r');
->>>>>>> 2fa69c4bff382b3bdd43c69b699dba6f331d5640
   try {
     const buf = Buffer.alloc(12);
     await fd.read(buf, 0, 12, 0);
@@ -60,7 +45,8 @@ async function validateImageContent(filePath) {
 // Delete file helper (best-effort, log on failure)
 function safeUnlink(filePath) {
   const resolved = path.resolve(filePath);
-  if (!resolved.startsWith(avvikDir)) return;
+  const relative = path.relative(avvikDir, resolved);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) return;
   try { fs.unlinkSync(resolved); } catch { /* ignore */ }
 }
 

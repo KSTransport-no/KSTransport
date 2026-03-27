@@ -4,7 +4,7 @@ const logger = require('../utils/logger');
 // Optimaliserte connection pool innstillinger
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
   // Connection pool optimalisering
   max: parseInt(process.env.DB_POOL_MAX) || 20, // Maks antall klienter i poolen
   min: parseInt(process.env.DB_POOL_MIN) || 5, // Minimum antall klienter i poolen

@@ -4,6 +4,12 @@ import React, { useCallback } from 'react'
 import { VirtualizedList } from '@/components/VirtualizedList'
 import { SkiftListItem } from './SkiftListItem'
 
+const defaultFormatDato = (d: string) =>
+  new Date(d).toLocaleDateString('no-NO', { year: 'numeric', month: 'long', day: 'numeric' })
+
+const defaultFormatTid = (t: string) =>
+  new Date(t).toLocaleTimeString('no-NO', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })
+
 interface Skift {
   id: number
   sjåfør_navn?: string
@@ -53,8 +59,8 @@ export const SkiftList = React.memo<SkiftListProps>(({
   showCheckbox = false,
   selectedIds = new Set(),
   onToggle,
-  formatDato = (d) => new Date(d).toLocaleDateString('no-NO', { year: 'numeric', month: 'long', day: 'numeric' }),
-  formatTid = (t) => new Date(t).toLocaleTimeString('no-NO', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }),
+  formatDato = defaultFormatDato,
+  formatTid = defaultFormatTid,
   beregnArbeidstid = () => '',
   useVirtualization = false,
   maxHeight = 600

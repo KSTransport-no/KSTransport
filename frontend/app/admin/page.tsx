@@ -38,6 +38,7 @@ import {
   Settings
 } from 'lucide-react'
 import { NotificationBell } from '@/components/NotificationBell'
+import { PageSkeleton } from '@/components/loading/PageSkeleton'
 
 interface Sjåfør {
   id: number

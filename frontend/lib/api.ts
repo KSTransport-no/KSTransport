@@ -2,6 +2,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
 import React from 'react'
 import { getErrorMessage } from './errorMessages'
 import { toast } from '@/hooks/use-toast'
+import { ToastAction } from '@/components/ui/toast'
 import { saveOfflineRequest } from './offlineStorage'
 import { logger } from './logger'
 
@@ -100,10 +101,10 @@ api.interceptors.response.use(
             title: errorMsg.title,
             description: errorMsg.description,
             action: errorMsg.action ? React.createElement(
-              'button',
+              ToastAction,
               {
+                altText: errorMsg.action.label,
                 onClick: errorMsg.action.onClick,
-                className: 'text-sm font-medium underline'
               },
               errorMsg.action.label
             ) : undefined,
@@ -119,10 +120,10 @@ api.interceptors.response.use(
         title: errorMsg.title,
         description: errorMsg.description,
         action: errorMsg.action ? React.createElement(
-          'button',
+          ToastAction,
           {
+            altText: errorMsg.action.label,
             onClick: errorMsg.action.onClick,
-            className: 'text-sm font-medium underline'
           },
           errorMsg.action.label
         ) : undefined,

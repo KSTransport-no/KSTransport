@@ -13,13 +13,26 @@ const sanitizeString = (input) => {
     return input;
   }
 
-  return input
-    .replace(/[<>]/g, '') // Fjern < og >
-    .replace(/javascript:/gi, '') // Fjern javascript: protokoll
-    .replace(/data:/gi, '') // Fjern data: protokoll
-    .replace(/vbscript:/gi, '') // Fjern vbscript: protokoll
-    .replace(/on\w+=/gi, '') // Fjern event handlers (onclick, onload, etc.)
-    .trim();
+  // Single-char removal is safe in one pass
+  let result = input.replace(/[<>]/g, '');
+
+  // Multi-char patterns must loop until stable to prevent
+  // nested bypass (e.g. "javascrjavascript:ipt:" → "javascript:")
+  const multiCharPatterns = [
+    /javascript:/gi,
+    /data:/gi,
+    /vbscript:/gi,
+    /on\w+=/gi,
+  ];
+  let prev;
+  do {
+    prev = result;
+    for (const pattern of multiCharPatterns) {
+      result = result.replace(pattern, '');
+    }
+  } while (result !== prev);
+
+  return result.trim();
 };
 
 /**

@@ -107,7 +107,7 @@ api.interceptors.response.use(
                 onClick: errorMsg.action.onClick,
               },
               errorMsg.action.label
-            ) as ToastActionElement : undefined,
+            ) as unknown as ToastActionElement : undefined,
           })
         }, 100)
         window.location.href = '/login'
@@ -126,7 +126,7 @@ api.interceptors.response.use(
             onClick: errorMsg.action.onClick,
           },
           errorMsg.action.label
-        ) as ToastActionElement : undefined,
+        ) as unknown as ToastActionElement : undefined,
       })
     }
     return Promise.reject(error)

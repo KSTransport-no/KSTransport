@@ -76,7 +76,7 @@ services:
   frontend:
     build: 
       context: ./frontend
-      dockerfile: Dockerfile.dev
+      dockerfile: ${FRONTEND_DOCKERFILE:-Dockerfile}
     ports:
       - "3002:3000"
     environment:

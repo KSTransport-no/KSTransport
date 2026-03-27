@@ -40,7 +40,7 @@ if (process.env.NODE_ENV === 'production') {
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutter
-  max: process.env.NODE_ENV === 'development' ? 1000 : 100, // Høyere grense i utvikling
+  max: process.env.NODE_ENV === 'development' ? 1000 : 300, // 300 per 15 min — SPA pages fire many parallel API calls
   message: { feil: 'For mange forespørsler, prøv igjen senere' },
   standardHeaders: true,
   legacyHeaders: false

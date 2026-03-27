@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { NotificationBell } from '@/components/NotificationBell'
+import { SkeletonPageHeader, SkeletonCardList } from '@/components/loading/SkeletonCard'
 
 interface InfoKort {
   id: number

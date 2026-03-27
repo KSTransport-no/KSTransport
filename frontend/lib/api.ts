@@ -2,7 +2,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
 import React from 'react'
 import { getErrorMessage } from './errorMessages'
 import { toast } from '@/hooks/use-toast'
-import { ToastAction } from '@/components/ui/toast'
+import { ToastAction, type ToastActionElement } from '@/components/ui/toast'
 import { saveOfflineRequest } from './offlineStorage'
 import { logger } from './logger'
 
@@ -107,7 +107,7 @@ api.interceptors.response.use(
                 onClick: errorMsg.action.onClick,
               },
               errorMsg.action.label
-            ) : undefined,
+            ) as ToastActionElement : undefined,
           })
         }, 100)
         window.location.href = '/login'
@@ -126,7 +126,7 @@ api.interceptors.response.use(
             onClick: errorMsg.action.onClick,
           },
           errorMsg.action.label
-        ) : undefined,
+        ) as ToastActionElement : undefined,
       })
     }
     return Promise.reject(error)

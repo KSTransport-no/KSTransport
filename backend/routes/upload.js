@@ -2,22 +2,38 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const FileType = require('file-type');
 const { authenticateToken } = require('../middleware/auth');
 const logger = require('../utils/logger');
 const { handleError } = require('../utils/errorHandler');
 
-const ALLOWED_IMAGE_TYPES = new Set([
-  'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp'
-]);
+// Magic byte signatures for allowed image types
+const IMAGE_SIGNATURES = [
+  { mime: 'image/jpeg', ext: 'jpg',  bytes: [0xFF, 0xD8, 0xFF] },
+  { mime: 'image/png',  ext: 'png',  bytes: [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A] },
+  { mime: 'image/gif',  ext: 'gif',  bytes: [0x47, 0x49, 0x46, 0x38] },           // GIF87a / GIF89a
+  { mime: 'image/webp', ext: 'webp', bytes: [0x52, 0x49, 0x46, 0x46], extra: { offset: 8, bytes: [0x57, 0x45, 0x42, 0x50] } }, // RIFF....WEBP
+  { mime: 'image/bmp',  ext: 'bmp',  bytes: [0x42, 0x4D] },
+];
 
 // Validate file content matches an actual image via magic bytes
 async function validateImageContent(filePath) {
-  const type = await FileType.fromFile(filePath);
-  if (!type || !ALLOWED_IMAGE_TYPES.has(type.mime)) {
+  const fd = await fs.promises.open(filePath, 'r');
+  try {
+    const buf = Buffer.alloc(12);
+    await fd.read(buf, 0, 12, 0);
+
+    for (const sig of IMAGE_SIGNATURES) {
+      if (sig.bytes.every((b, i) => buf[i] === b)) {
+        if (sig.extra && !sig.extra.bytes.every((b, i) => buf[sig.extra.offset + i] === b)) {
+          continue;
+        }
+        return { mime: sig.mime, ext: sig.ext };
+      }
+    }
     return null;
+  } finally {
+    await fd.close();
   }
-  return type;
 }
 
 // Delete file helper (best-effort, log on failure)

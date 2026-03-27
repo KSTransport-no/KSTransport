@@ -242,7 +242,7 @@ export function NotificationBell() {
               varslinger.map(varsling => (
                 <div
                   key={varsling.id}
-                  className={`flex items-start gap-3 p-3 border-b last:border-b-0 hover:bg-gray-50 transition-colors cursor-pointer ${
+                  className={`group flex items-start gap-3 p-3 border-b last:border-b-0 hover:bg-gray-50 transition-colors cursor-pointer ${
                     !varsling.lest ? 'bg-blue-50/50' : ''
                   }`}
                   onClick={() => handleVarslingClick(varsling)}

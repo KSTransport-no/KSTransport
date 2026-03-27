@@ -16,16 +16,14 @@ const urlsToCache = [
 
 // Install event - cache ressurser
 self.addEventListener("install", (event) => {
-  console.log(`Service Worker: Installing new version ${CACHE_VERSION}`);
   event.waitUntil(
     caches
       .open(CACHE_NAME)
       .then((cache) => {
-        console.log("Service Worker: Caching filer");
         return cache.addAll(urlsToCache);
       })
       .catch((error) => {
-        console.error("Service Worker: Feil ved caching:", error);
+        console.error("Service Worker: Cache install failed:", error);
       }),
   );
   // Aktivér umiddelbart
@@ -34,7 +32,6 @@ self.addEventListener("install", (event) => {
 
 // Activate event - rydd opp i gamle caches
 self.addEventListener("activate", (event) => {
-  console.log(`Service Worker: Activating new version ${CACHE_VERSION}`);
   event.waitUntil(
     caches
       .keys()
@@ -43,15 +40,12 @@ self.addEventListener("activate", (event) => {
           cacheNames.map((cacheName) => {
             // Slett alle caches som ikke er den nye
             if (!cacheName.startsWith(`kstransport-${CACHE_VERSION}`)) {
-              console.log("Service Worker: Sletter gammel cache:", cacheName);
               return caches.delete(cacheName);
             }
           }),
         );
       })
       .then(() => {
-        // Ta kontroll over alle tabs umiddelbart
-        console.log("Service Worker: Taking control of all clients");
         return self.clients.claim();
       }),
   );
@@ -80,10 +74,6 @@ self.addEventListener("fetch", (event) => {
   const forceRefresh = url.searchParams.get("force-refresh") === "true";
 
   if (forceRefresh) {
-    console.log(
-      "Service Worker: Force refresh requested for:",
-      event.request.url,
-    );
     event.respondWith(fetch(event.request));
     return;
   }
@@ -241,7 +231,7 @@ async function syncPendingRequests() {
       });
     });
   } catch (error) {
-    console.error("Feil ved background sync:", error);
+    console.error("Service Worker: Background sync failed:", error);
   }
 }
 

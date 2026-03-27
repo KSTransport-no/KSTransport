@@ -36,7 +36,7 @@ function cacheMiddleware(options = {}) {
 
       if (isStale && staleWhileRevalidate) {
         // Returner stale data, men trigger revalidation i bakgrunnen
-        logger.log(`Returning stale data for ${cacheKey}, revalidating in background`);
+        logger.debug(`Cache STALE for ${cacheKey}, revalidating`);
         
         // Sett stale-while-revalidate header
         res.setHeader('Cache-Control', `public, max-age=0, stale-while-revalidate=${Math.floor(staleTTL / 1000)}`);
@@ -48,7 +48,7 @@ function cacheMiddleware(options = {}) {
         // Data er fresh
         res.setHeader('Cache-Control', `public, max-age=${Math.floor(ttl / 1000)}`);
         res.setHeader('X-Cache', 'HIT');
-        logger.log(`Cache HIT for ${cacheKey}`);
+        logger.debug(`Cache HIT for ${cacheKey}`);
         return res.json(cachedData);
       }
     }
@@ -62,7 +62,7 @@ function cacheMiddleware(options = {}) {
         cache.set(cacheKey, data, ttl);
         res.setHeader('Cache-Control', `public, max-age=${Math.floor(ttl / 1000)}`);
         res.setHeader('X-Cache', 'MISS');
-        logger.log(`Cache MISS for ${cacheKey}, data cached`);
+        logger.debug(`Cache MISS for ${cacheKey}`);
       }
       
       return originalJson(data);
@@ -87,11 +87,11 @@ function invalidateCache(keys) {
       if (Array.isArray(keysToInvalidate)) {
         keysToInvalidate.forEach(key => {
           cache.delete(key);
-          logger.log(`Cache invalidated for key: ${key}`);
+          logger.debug(`Cache invalidated: ${key}`);
         });
       } else if (typeof keysToInvalidate === 'string') {
         cache.delete(keysToInvalidate);
-        logger.log(`Cache invalidated for key: ${keysToInvalidate}`);
+        logger.debug(`Cache invalidated: ${keysToInvalidate}`);
       }
     };
 

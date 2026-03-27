@@ -278,8 +278,7 @@ process.on('uncaughtException', (error) => {
 
 // Start server
 app.listen(PORT, () => {
-  logger.log(`🚛 KS Transport API server kjører på port ${PORT}`);
-  logger.log(`🌍 Miljø: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`Server started on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
 });
 
 module.exports = app;

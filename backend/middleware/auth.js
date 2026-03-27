@@ -31,7 +31,7 @@ const authenticateToken = async (req, res, next) => {
 };
 
 const requireAdmin = async (req, res, next) => {
-  logger.log('requireAdmin check:', { sjåfør: req.sjåfør, admin: req.sjåfør?.admin });
+  logger.debug('requireAdmin check', { userId: req.sjåfør?.id, admin: req.sjåfør?.admin });
   if (!req.sjåfør || !req.sjåfør.admin) {
     return res.status(403).json({ feil: 'Admin-tilgang påkrevd' });
   }

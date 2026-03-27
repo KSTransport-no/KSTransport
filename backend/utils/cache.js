@@ -25,11 +25,11 @@ class Cache {
     // Sjekk om data er utløpt
     if (Date.now() > item.expiresAt) {
       this.cache.delete(key);
-      logger.log(`Cache expired for key: ${key}`);
+      logger.debug(`Cache expired for key: ${key}`);
       return null;
     }
 
-    logger.log(`Cache hit for key: ${key}`);
+    logger.debug(`Cache hit for key: ${key}`);
     return item.data;
   }
 
@@ -48,7 +48,7 @@ class Cache {
       cachedAt: Date.now()
     });
 
-    logger.log(`Cache set for key: ${key}, expires at: ${new Date(expiresAt).toISOString()}`);
+    logger.debug(`Cache set for key: ${key}`);
   }
 
   /**
@@ -57,7 +57,7 @@ class Cache {
    */
   delete(key) {
     this.cache.delete(key);
-    logger.log(`Cache deleted for key: ${key}`);
+    logger.debug(`Cache deleted for key: ${key}`);
   }
 
   /**
@@ -65,7 +65,7 @@ class Cache {
    */
   clear() {
     this.cache.clear();
-    logger.log('Cache cleared');
+    logger.debug('Cache cleared');
   }
 
   /**
@@ -83,7 +83,7 @@ class Cache {
     }
 
     if (cleaned > 0) {
-      logger.log(`Cache cleanup: removed ${cleaned} expired entries`);
+      logger.debug(`Cache cleanup: removed ${cleaned} expired entries`);
     }
   }
 

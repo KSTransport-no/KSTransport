@@ -69,19 +69,14 @@ const upload = multer({
 // Upload bilde for avvik (enkelt bilde)
 router.post('/avvik', authenticateToken, upload.single('image'), async (req, res) => {
   try {
-    logger.log('Upload request received:', {
+    logger.debug('Upload request received', {
       hasFile: !!req.file,
-      fileInfo: req.file ? {
-        originalname: req.file.originalname,
-        mimetype: req.file.mimetype,
-        size: req.file.size,
-        filename: req.file.filename
-      } : null,
-      userAgent: req.headers['user-agent']
+      mimetype: req.file?.mimetype,
+      size: req.file?.size
     });
 
     if (!req.file) {
-      logger.log('No file uploaded');
+      logger.debug('No file uploaded');
       return res.status(400).json({ feil: 'Ingen fil ble lastet opp' });
     }
 
@@ -94,7 +89,7 @@ router.post('/avvik', authenticateToken, upload.single('image'), async (req, res
 
     const fileUrl = `/uploads/avvik/${req.file.filename}`;
     
-    logger.log('File uploaded successfully:', fileUrl);
+    logger.info('File uploaded', { url: fileUrl });
     
     res.json({
       melding: 'Bilde lastet opp!',
@@ -109,19 +104,12 @@ router.post('/avvik', authenticateToken, upload.single('image'), async (req, res
 // Upload flere bilder for avvik
 router.post('/avvik/multiple', authenticateToken, upload.array('images', 10), async (req, res) => {
   try {
-    logger.log('Multiple upload request received:', {
-      fileCount: req.files ? req.files.length : 0,
-      files: req.files ? req.files.map(f => ({
-        originalname: f.originalname,
-        mimetype: f.mimetype,
-        size: f.size,
-        filename: f.filename
-      })) : [],
-      userAgent: req.headers['user-agent']
+    logger.debug('Multiple upload request received', {
+      fileCount: req.files ? req.files.length : 0
     });
 
     if (!req.files || req.files.length === 0) {
-      logger.log('No files uploaded');
+      logger.debug('No files uploaded');
       return res.status(400).json({ feil: 'Ingen filer ble lastet opp' });
     }
 
@@ -131,7 +119,7 @@ router.post('/avvik/multiple', authenticateToken, upload.array('images', 10), as
       const type = await validateImageContent(file.path);
       if (!type) {
         safeUnlink(file.path);
-        logger.log('Rejected invalid file:', file.originalname);
+        logger.warn('Rejected invalid file', { filename: file.originalname });
         continue;
       }
       uploadedFiles.push({
@@ -146,7 +134,7 @@ router.post('/avvik/multiple', authenticateToken, upload.array('images', 10), as
       return res.status(400).json({ feil: 'Ingen gyldige bilder ble lastet opp' });
     }
     
-    logger.log('Files uploaded successfully:', uploadedFiles.length);
+    logger.info('Multiple files uploaded', { count: uploadedFiles.length });
     
     res.json({
       melding: `${uploadedFiles.length} bilder lastet opp!`,

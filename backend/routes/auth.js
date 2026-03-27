@@ -38,18 +38,17 @@ router.post(
   [body("epost").isEmail(), body("passord").isLength({ min: 6 })],
   async (req, res) => {
     try {
-      logger.log("Login forespørsel mottatt:", req.body);
+      logger.debug('Login attempt', { epost: req.body.epost });
 
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        logger.log("Valideringsfeil:", errors.array());
+        logger.debug('Login validation failed', errors.array());
         return res
           .status(400)
           .json({ feil: "Ugyldig input", detaljer: errors.array() });
       }
 
       const { epost, passord } = req.body;
-      logger.log("Prøver å logge inn:", epost);
 
       // Finn bruker
       const result = await pool.query(
@@ -57,28 +56,23 @@ router.post(
         [epost],
       );
 
-      logger.log("Database resultat:", result.rows.length, "rader funnet");
-
       if (result.rows.length === 0) {
-        logger.log("Ingen bruker funnet for e-post:", epost);
+        logger.debug('Login failed - user not found');
         return res.status(401).json({ feil: "Ugyldig e-post eller passord" });
       }
 
       const sjåfør = result.rows[0];
-      logger.log("Bruker funnet:", sjåfør.navn, "Aktiv:", sjåfør.aktiv);
 
       if (!sjåfør.aktiv) {
-        logger.log("Bruker er deaktivert");
+        logger.info('Login rejected - deactivated account', { userId: sjåfør.id });
         return res.status(401).json({ feil: "Kontoen er deaktivert" });
       }
 
       // Sjekk passord
-      logger.log("Sjekker passord...");
       const validPassword = await bcrypt.compare(passord, sjåfør.passord_hash);
-      logger.log("Passord gyldig:", validPassword);
 
       if (!validPassword) {
-        logger.log("Ugyldig passord");
+        logger.debug('Login failed - invalid password');
         return res.status(401).json({ feil: "Ugyldig e-post eller passord" });
       }
 

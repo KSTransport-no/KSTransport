@@ -640,11 +640,31 @@ router.post('/tidregistrering', authenticateToken, requireAdmin, [
       sga_kode_annet || null
     ]);
 
-    logger.log(`Admin ${req.sjåfør.navn} created shift for driver ${sjåfør_id}`);
+    logger.info('Admin created shift for driver', { admin: req.sjåfør.navn, driverId: sjåfør_id });
     res.status(201).json({ melding: 'Tidregistrering lagret!', skift: result.rows[0] });
   } catch (error) {
     handleError(error, req, res, 'Admin: Create time registration on behalf endpoint');
   }
+});
+
+// Get current backend log level
+router.get('/log-level', authenticateToken, requireAdmin, (req, res) => {
+  res.json({ level: logger.getLevel(), levels: logger.VALID_LEVELS });
+});
+
+// Set backend log level at runtime
+router.put('/log-level', authenticateToken, requireAdmin, [
+  body('level').isIn(['debug', 'info', 'warn', 'error']),
+], (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ feil: 'Ugyldig lognivå', detaljer: errors.array() });
+  }
+
+  const { level } = req.body;
+  logger.setLevel(level);
+  logger.info(`Log level changed to '${level}' by ${req.sjåfør.navn}`);
+  res.json({ level: logger.getLevel() });
 });
 
 module.exports = router;

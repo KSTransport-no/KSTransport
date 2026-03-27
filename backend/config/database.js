@@ -18,7 +18,7 @@ const pool = new Pool({
 
 // Test database connection
 pool.on('connect', () => {
-  logger.log('Tilkoblet til PostgreSQL database');
+  logger.info('Tilkoblet til PostgreSQL database');
 });
 
 pool.on('error', (err) => {
@@ -31,7 +31,7 @@ pool.on('error', (err) => {
 async function testConnection() {
   try {
     const result = await pool.query('SELECT NOW()');
-    logger.log('Database connection test successful:', result.rows[0].now);
+    logger.info('Database connection test successful');
   } catch (error) {
     logger.error('Database connection test failed:', error);
     // Ikke krasj applikasjonen, bare logg feilen

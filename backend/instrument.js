@@ -53,7 +53,7 @@ Sentry.init({
   ],
 });
 
-console.log('Sentry initialized for backend');
+console.info('[INFO] Sentry initialized for backend');
 
 module.exports = Sentry;
 

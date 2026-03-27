@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
   try {
     const { lat = '58.9700', lon = '5.7331' } = req.query
     
-    logger.log(`Henter værdata fra Yr.no for lat=${lat}, lon=${lon}...`)
+    logger.debug('Fetching weather data from Yr.no', { lat, lon });
     
     // Hent værdata fra Yr.no API
     const response = await fetch(`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`, {
@@ -31,7 +31,7 @@ router.get('/', async (req, res) => {
       throw new Error('Invalid weather data structure')
     }
     
-    logger.log('Værdata hentet fra Yr.no, sender til klient')
+    logger.debug('Weather data fetched from Yr.no');
     
     // Returner data direkte til klienten
     res.json(data)

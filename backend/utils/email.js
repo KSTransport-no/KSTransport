@@ -32,13 +32,13 @@ async function sendMail({ to, subject, html }) {
 
   if (!t) {
     // Fallback: log to console so dev/test environments still work
-    logger.log(`[EMAIL] To: ${to} | Subject: ${subject}`);
-    logger.log(`[EMAIL] Body:\n${html}`);
+    logger.debug(`[EMAIL] To: ${to} | Subject: ${subject}`);
+    logger.debug(`[EMAIL] Body logged (dev fallback)`);
     return { accepted: [to], fallback: true };
   }
 
   const info = await t.sendMail({ from, to, subject, html });
-  logger.log(`Email sent to ${to}: ${info.messageId}`);
+  logger.info(`Email sent to ${to}`, { messageId: info.messageId });
   return info;
 }
 

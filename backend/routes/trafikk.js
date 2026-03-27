@@ -35,7 +35,7 @@ router.get("/", async (req, res) => {
   }
 
   try {
-    logger.log("Henter trafikkinformasjon fra TomTom...");
+    logger.debug('Fetching traffic info from TomTom');
 
     const [incidentData, flowData] = await Promise.all([
       hentIncidents(apiKey),

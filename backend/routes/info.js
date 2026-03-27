@@ -34,7 +34,7 @@ router.get('/public', authenticateToken, async (req, res) => {
 // Opprett nytt info-kort (kun admin)
 router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    logger.log('Info-kort POST request:', req.body);
+    logger.debug('Info-kort POST request', { kategori: req.body.kategori, navn: req.body.navn });
     
     const { kategori, navn, verdi, beskrivelse } = req.body;
     

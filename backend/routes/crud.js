@@ -273,7 +273,7 @@ router.post('/biler', authenticateToken, requireAdmin, [
 
     // Invalider cache for biler
     cache.delete('data:/api/data/biler:public');
-    logger.log('Cache invalidated for biler after POST');
+    logger.debug('Cache invalidated for biler after POST');
 
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -339,7 +339,7 @@ router.put('/biler/:id', authenticateToken, requireAdmin, [
 
     // Invalider cache for biler
     cache.delete('data:/api/data/biler:public');
-    logger.log('Cache invalidated for biler after PUT');
+    logger.debug('Cache invalidated for biler after PUT');
 
     res.json(result.rows[0]);
   } catch (error) {
@@ -358,7 +358,7 @@ router.delete('/biler/:id', authenticateToken, requireAdmin, async (req, res) =>
 
     // Invalider cache for biler
     cache.delete('data:/api/data/biler:public');
-    logger.log('Cache invalidated for biler after DELETE');
+    logger.debug('Cache invalidated for biler after DELETE');
 
     res.json({ melding: 'Bil slettet' });
   } catch (error) {
@@ -395,7 +395,7 @@ router.post('/soner', authenticateToken, requireAdmin, [
 
     // Invalider cache for soner
     cache.delete('data:/api/data/soner:public');
-    logger.log('Cache invalidated for soner after POST');
+    logger.debug('Cache invalidated for soner after POST');
 
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -451,7 +451,7 @@ router.put('/soner/:id', authenticateToken, requireAdmin, [
 
     // Invalider cache for soner
     cache.delete('data:/api/data/soner:public');
-    logger.log('Cache invalidated for soner after PUT');
+    logger.debug('Cache invalidated for soner after PUT');
 
     res.json(result.rows[0]);
   } catch (error) {
@@ -470,7 +470,7 @@ router.delete('/soner/:id', authenticateToken, requireAdmin, async (req, res) =>
 
     // Invalider cache for soner
     cache.delete('data:/api/data/soner:public');
-    logger.log('Cache invalidated for soner after DELETE');
+    logger.debug('Cache invalidated for soner after DELETE');
 
     res.json({ melding: 'Sone slettet' });
   } catch (error) {
@@ -749,7 +749,7 @@ router.post('/sga-koder', authenticateToken, requireAdmin, [
 
     // Invalider cache for SGA-koder
     cache.delete('data:/api/data/sga-koder:public');
-    logger.log('Cache invalidated for SGA-koder after POST');
+    logger.debug('Cache invalidated for SGA-koder after POST');
 
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -814,7 +814,7 @@ router.put('/sga-koder/:id', authenticateToken, requireAdmin, [
 
     // Invalider cache for SGA-koder
     cache.delete('data:/api/data/sga-koder:public');
-    logger.log('Cache invalidated for SGA-koder after PUT');
+    logger.debug('Cache invalidated for SGA-koder after PUT');
 
     res.json(result.rows[0]);
   } catch (error) {
@@ -844,7 +844,7 @@ router.delete('/sga-koder/:id', authenticateToken, requireAdmin, async (req, res
       
       // Invalider cache for SGA-koder
       cache.delete('data:/api/data/sga-koder:public');
-      logger.log('Cache invalidated for SGA-koder after DELETE (deactivated)');
+      logger.debug('Cache invalidated for SGA-koder after deactivation');
       
       return res.json({ melding: 'SGA-kode deaktivert (i bruk i eksisterende skift)', sga_kode: result.rows[0] });
     }
@@ -857,7 +857,7 @@ router.delete('/sga-koder/:id', authenticateToken, requireAdmin, async (req, res
 
     // Invalider cache for SGA-koder
     cache.delete('data:/api/data/sga-koder:public');
-    logger.log('Cache invalidated for SGA-koder after DELETE');
+    logger.debug('Cache invalidated for SGA-koder after DELETE');
 
     res.json({ melding: 'SGA-kode slettet' });
   } catch (error) {

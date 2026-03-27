@@ -106,11 +106,11 @@ router.post('/', authenticateToken, [
   body('bilder').optional().isArray()
 ], async (req, res) => {
   try {
-    logger.log('Avvik POST request:', req.body)
+    logger.debug('Avvik POST request', { type: req.body.type, skift_id: req.body.skift_id });
     
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      logger.log('Validation errors:', errors.array())
+      logger.debug('Avvik validation failed', errors.array());
       return res.status(400).json({ feil: 'Ugyldig input', detaljer: errors.array() });
     }
 
@@ -165,7 +165,7 @@ router.post('/', authenticateToken, [
       }
 
       await client.query('COMMIT');
-      logger.log('Avvik created:', avvik)
+      logger.info('Avvik created', { id: avvik.id, type: avvik.type });
 
       // Notify admins about new avvik
       notifyAdmins({
@@ -198,21 +198,16 @@ router.put('/:id', authenticateToken, [
   body('beskrivelse').optional().isString().isLength({ min: 1, max: 1000 })
 ], async (req, res) => {
   try {
-    logger.log('=== AVVIK UPDATE DEBUG ===');
-    logger.log('Request params:', req.params);
-    logger.log('Request body:', req.body);
-    logger.log('User ID:', req.sjåfør?.id);
+    logger.debug('Avvik update request', { id: req.params.id, fields: Object.keys(req.body) });
     
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      logger.log('Validation errors:', errors.array());
+      logger.debug('Avvik update validation failed', errors.array());
       return res.status(400).json({ feil: 'Ugyldig input', detaljer: errors.array() });
     }
 
     const { id } = req.params;
     const updates = req.body;
-
-    logger.log('Looking for avvik with ID:', id, 'and sjåfør_id:', req.sjåfør.id);
 
     // Sjekk at avviket tilhører sjåføren
     const existingAvvik = await pool.query(
@@ -220,19 +215,13 @@ router.put('/:id', authenticateToken, [
       [id, req.sjåfør.id]
     );
 
-    logger.log('Existing avvik query result:', existingAvvik.rows);
-
     if (existingAvvik.rows.length === 0) {
-      logger.log('Avvik not found');
       return res.status(404).json({ feil: 'Avvik ikke funnet' });
     }
 
-    logger.log('Found avvik:', existingAvvik.rows[0]);
-    logger.log('Current status:', existingAvvik.rows[0].status);
-
     // Tillat redigering kun når status = 'ny'
     if (existingAvvik.rows[0].status !== 'ny') {
-      logger.log('Avvik cannot be edited - status is not "ny"');
+      logger.debug('Avvik update rejected - status is not "ny"', { id, status: existingAvvik.rows[0].status });
       return res.status(403).json({ feil: 'Avvik kan kun redigeres når status er ny' });
     }
 
@@ -241,27 +230,19 @@ router.put('/:id', authenticateToken, [
     const values = [];
     let paramCount = 0;
 
-    logger.log('Building update query...');
     Object.keys(updates).forEach(key => {
       if (updates[key] !== undefined) {
         paramCount++;
         updateFields.push(`${key} = $${paramCount}`);
         values.push(updates[key]);
-        logger.log(`Adding field: ${key} = ${updates[key]}`);
       }
     });
 
-    logger.log('Update fields:', updateFields);
-    logger.log('Values array:', values);
-    logger.log('Param count:', paramCount);
-
     if (updateFields.length === 0) {
-      logger.log('No fields to update');
       return res.status(400).json({ feil: 'Ingen oppdateringer oppgitt' });
     }
 
     values.push(id, req.sjåfør.id);
-    logger.log('Final values array:', values);
 
     const query = `
       UPDATE avvik 
@@ -270,12 +251,9 @@ router.put('/:id', authenticateToken, [
       RETURNING *
     `;
 
-    logger.log('Final SQL query:', query);
-    logger.log('Query parameters:', values);
+    logger.debug('Avvik update query', { id, fieldCount: updateFields.length });
 
     const result = await pool.query(query, values);
-
-    logger.log('Update result:', result.rows);
 
     res.json({
       melding: 'Avvik oppdatert vellykket',

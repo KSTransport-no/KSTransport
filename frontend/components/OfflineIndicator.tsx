@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { usePWA } from '@/contexts/PWAContext'
 import { getPendingCount } from '@/lib/offlineStorage'
-import { WifiOff, Wifi, CloudOff, CloudUpload, CheckCircle } from 'lucide-react'
+import { logger } from '@/lib/logger'
+import { WifiOff, Wifi, CloudOff, UploadCloud, CheckCircle } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 
@@ -20,7 +21,7 @@ export function OfflineIndicator() {
           const count = await getPendingCount()
           setPendingCount(count)
         } catch (error) {
-          console.error('Failed to get pending count:', error)
+          logger.error('Failed to get pending count', error)
         }
       }
 
@@ -30,7 +31,7 @@ export function OfflineIndicator() {
       return () => clearInterval(interval)
     } else {
       // Update pending count when offline
-      getPendingCount().then(setPendingCount).catch(console.error)
+      getPendingCount().then(setPendingCount).catch((e) => logger.error('Failed to get pending count', e))
     }
   }, [isOnline])
 
@@ -42,7 +43,7 @@ export function OfflineIndicator() {
         const count = await getPendingCount()
         setPendingCount(count)
       } catch (error) {
-        console.error('Failed to update pending count:', error)
+        logger.error('Failed to update pending count', error)
       } finally {
         setIsSyncing(false)
       }
@@ -87,13 +88,13 @@ export function OfflineIndicator() {
                   setPendingCount(count)
                   window.dispatchEvent(new Event('offline-sync-complete'))
                 } catch (error) {
-                  console.error('Sync failed:', error)
+                  logger.error('Sync failed', error)
                 } finally {
                   setIsSyncing(false)
                 }
               }}
             >
-              <CloudUpload className="h-3 w-3 mr-1" />
+              <UploadCloud className="h-3 w-3 mr-1" />
               Synkroniser nå
             </Button>
           )}

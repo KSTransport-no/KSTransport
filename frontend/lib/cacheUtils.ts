@@ -1,3 +1,5 @@
+import { logger } from './logger'
+
 // Cache busting utility
 export const CACHE_VERSION = 'v6'
 export const CACHE_TIMESTAMP = Date.now()
@@ -35,7 +37,7 @@ export async function updateServiceWorker(): Promise<boolean> {
         return true
       }
     } catch (error) {
-      console.error('Feil ved oppdatering av service worker:', error)
+      logger.error('Service worker update failed', error)
     }
   }
   return false
@@ -60,7 +62,7 @@ export async function forceRefreshCache(): Promise<void> {
         window.location.reload()
       }
     } catch (error) {
-      console.error('Feil ved force refresh:', error)
+      logger.error('Force refresh failed', error)
     }
   }
 }

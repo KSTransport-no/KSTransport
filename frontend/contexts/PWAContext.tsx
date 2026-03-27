@@ -137,12 +137,11 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
       installPrompt.preventDefault()
       
       const result = await installPrompt.prompt()
-      console.log('Install prompt result:', result)
       
       if (result.outcome === 'accepted') {
-        console.log('App installert')
+        logger.info('App installed')
       } else {
-        console.log('App installasjon avvist')
+        logger.debug('App install dismissed')
       }
       
       setInstallPrompt(null)

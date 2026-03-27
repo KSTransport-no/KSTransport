@@ -78,7 +78,6 @@ router.get('/kalender', authenticateToken, async (req, res) => {
     query += ' GROUP BY DATE(s.dato) ORDER BY dato DESC';
 
     const result = await pool.query(query, params);
-    logger.log('Kalender query result:', result.rows);
     res.json(result.rows);
   } catch (error) {
     handleError(error, req, res, 'Data: Get calendar data endpoint');
@@ -88,12 +87,8 @@ router.get('/kalender', authenticateToken, async (req, res) => {
 // Tidregistrering - opprett en tidregistrering
 router.post('/tidregistrering', authenticateToken, async (req, res) => {
   try {
-    logger.log('Tidregistrering mottatt:', req.body);
+    logger.debug('Tidregistrering mottatt', { registrering_type: req.body.registrering_type, dato: req.body.dato });
     const { bil_id, sone, sendinger, vekt, pause, kommentarer, dato, start_tid, slutt_tid, registrering_type, bomtur_venting, sga_kode_id, sga_kode_annet } = req.body;
-    logger.log('Parsed data:', { bil_id, sone, sendinger, vekt, pause, kommentarer, dato, start_tid, slutt_tid, registrering_type, bomtur_venting, sga_kode_id, sga_kode_annet });
-    logger.log('Dato type:', typeof dato, 'Dato value:', dato);
-    logger.log('Start tid type:', typeof start_tid, 'Start tid value:', start_tid);
-    logger.log('Slutt tid type:', typeof slutt_tid, 'Slutt tid value:', slutt_tid);
     
     // Valider registrering_type
     const validTypes = ['arbeidstid', 'ferie', 'sykemelding', 'egenmelding', 'egenmelding_barn'];

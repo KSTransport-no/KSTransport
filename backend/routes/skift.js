@@ -52,12 +52,10 @@ router.get('/', authenticateToken, async (req, res) => {
 
     query += ' ORDER BY s.dato DESC, s.start_tid DESC';
 
-    logger.log('Skift query:', query);
-    logger.log('Skift params:', params);
+    logger.debug('Skift query', { paramCount: params.length });
     
     const result = await pool.query(query, params);
-    logger.log('Skift result rows:', result.rows.length);
-    logger.log('Skift result data:', result.rows);
+    logger.debug('Skift result', { rowCount: result.rows.length });
     
     res.json(result.rows);
   } catch (error) {
@@ -285,12 +283,11 @@ router.put('/:id', authenticateToken, [
   body('kommentarer').optional().isString().isLength({ max: 1000 })
 ], async (req, res) => {
   try {
-    logger.log('Skift update request:', req.body);
-    logger.log('Skift ID:', req.params.id);
+    logger.debug('Skift update request', { id: req.params.id, fields: Object.keys(req.body) });
     
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      logger.log('Validation errors:', errors.array());
+      logger.debug('Skift update validation failed', errors.array());
       return res.status(400).json({ feil: 'Ugyldig input', detaljer: errors.array() });
     }
 

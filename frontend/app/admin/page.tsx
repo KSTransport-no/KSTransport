@@ -34,7 +34,8 @@ import {
   LogOut,
   CheckCircle,
   XCircle,
-  Receipt
+  Receipt,
+  Settings
 } from 'lucide-react'
 import { NotificationBell } from '@/components/NotificationBell'
 
@@ -137,6 +138,8 @@ export default function AdminPage() {
     verdi: '',
     beskrivelse: ''
   })
+  const [backendLogLevel, setBackendLogLevel] = useState('info')
+  const [frontendLogLevel, setFrontendLogLevel] = useState(logger.getLevel())
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [exportType, setExportType] = useState('')
   const [exportFilters, setExportFilters] = useState({
@@ -155,8 +158,47 @@ export default function AdminPage() {
         return
       }
       loadAllData()
+      loadLogLevel()
     }
   }, [sjåfør, isLoading, router])
+
+  const getAuthHeaders = () => {
+    const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1]
+    return { 'Authorization': `Bearer ${token}` }
+  }
+
+  const loadLogLevel = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/log-level`, { headers: getAuthHeaders() })
+      if (res.ok) {
+        const data = await res.json()
+        setBackendLogLevel(data.level)
+      }
+    } catch { /* ignore */ }
+  }
+
+  const updateBackendLogLevel = async (level: string) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/log-level`, {
+        method: 'PUT',
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ level }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setBackendLogLevel(data.level)
+        setMessage({ type: 'success', text: `Backend lognivå endret til ${data.level}` })
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Kunne ikke endre backend lognivå' })
+    }
+  }
+
+  const updateFrontendLogLevel = (level: string) => {
+    logger.setLevel(level)
+    setFrontendLogLevel(level)
+    setMessage({ type: 'success', text: `Frontend lognivå endret til ${level}` })
+  }
 
   const loadAllData = async () => {
     setLoading(true)
@@ -1057,6 +1099,51 @@ export default function AdminPage() {
                 ))}
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Innstillinger */}
+        <Card>
+          <CardHeader className="p-3 sm:p-6">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              Innstillinger
+            </CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Lognivå for feilsøking</CardDescription>
+          </CardHeader>
+          <CardContent className="p-3 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="backend-log-level" className="text-sm font-medium">Backend lognivå</Label>
+                <p className="text-xs text-gray-500 mb-1">Gjelder til serveren restartes</p>
+                <Select value={backendLogLevel} onValueChange={updateBackendLogLevel}>
+                  <SelectTrigger id="backend-log-level">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="debug">Debug (alt)</SelectItem>
+                    <SelectItem value="info">Info (standard)</SelectItem>
+                    <SelectItem value="warn">Warn (advarsler)</SelectItem>
+                    <SelectItem value="error">Error (kun feil)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="frontend-log-level" className="text-sm font-medium">Frontend lognivå</Label>
+                <p className="text-xs text-gray-500 mb-1">Lagres i nettleseren din</p>
+                <Select value={frontendLogLevel} onValueChange={updateFrontendLogLevel}>
+                  <SelectTrigger id="frontend-log-level">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="debug">Debug (alt)</SelectItem>
+                    <SelectItem value="info">Info (standard)</SelectItem>
+                    <SelectItem value="warn">Warn (advarsler)</SelectItem>
+                    <SelectItem value="error">Error (kun feil)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </CardContent>
         </Card>
 

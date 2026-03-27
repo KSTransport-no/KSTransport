@@ -17,10 +17,10 @@ Sentry.init({
   sendDefaultPii: true,
 
   // Tracing
-  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0.5,
 
   // Profiling
-  profileSessionSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+  profileSessionSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0.5,
   profileLifecycle: 'trace',
 
   // Logs
@@ -36,14 +36,11 @@ Sentry.init({
   },
 
   tracesSampler(samplingContext) {
-    if (process.env.NODE_ENV !== 'production') {
-      return 1.0;
-    }
     const url = samplingContext.request?.url || '';
     if (url.includes('/health')) {
       return 0;
     }
-    return 0.1;
+    return process.env.NODE_ENV === 'production' ? 0.1 : 0.5;
   },
 
   integrations: [

@@ -9,6 +9,9 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Set NEXT_PUBLIC_* env vars so they are baked into the client bundle
+ENV NEXT_PUBLIC_API_URL=/api
+
 # Build the application
 RUN npm run build
 

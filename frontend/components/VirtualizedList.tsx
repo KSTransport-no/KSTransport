@@ -2,7 +2,6 @@
 
 import React, { useMemo } from 'react'
 import { FixedSizeList as List } from 'react-window'
-import { logger } from '@/lib/logger'
 
 interface VirtualizedListProps<T> {
   items: T[]
@@ -72,7 +71,6 @@ export function AutoVirtualizedList<T>({
   overscanCount = 5
 }: Omit<VirtualizedListProps<T>, 'height'> & { maxHeight?: number }) {
   const calculatedHeight = Math.min(items.length * itemHeight, maxHeight)
-  const minHeight = Math.min(items.length * itemHeight, 400)
 
   return (
     <VirtualizedList

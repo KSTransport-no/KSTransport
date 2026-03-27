@@ -11,13 +11,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
   ArrowLeft,
   Users,
-  Truck,
   Clock,
   Package,
   AlertTriangle,
   Lightbulb,
   Calendar,
-  TrendingUp,
   CheckCircle,
   XCircle
 } from 'lucide-react'

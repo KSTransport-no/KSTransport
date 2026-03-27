@@ -17,13 +17,7 @@ import {
   Clock, 
   Calendar,
   ArrowLeft,
-  Users,
-  Truck,
-  MapPin,
   Package,
-  Pause,
-  Scale,
-  MessageSquare,
   CheckCircle,
   XCircle,
   Filter,
@@ -280,10 +274,6 @@ export default function SkiftPage() {
     
     return `${arbeidstimer}t ${arbeidsminutter}m`
   }, [])
-
-  const filtrerSkift = (skift: Skift[]) => {
-    return filtrerSkiftHelper(skift, godkjentFilter, sjåførFilter, bilFilter, fraDato, tilDato)
-  }
 
   const handleGodkjenn = async (skiftId: number, godkjent: boolean) => {
     try {

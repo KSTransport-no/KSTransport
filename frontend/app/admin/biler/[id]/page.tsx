@@ -15,7 +15,6 @@ import {
   Package,
   Calendar,
   User,
-  MapPin
 } from 'lucide-react'
 
 interface Bil {

@@ -6,7 +6,7 @@
  */
 
 require('dotenv').config();
-const { analyzeQuery, usesIndexes, findSlowQueries, checkIndexUsage, suggestIndexes } = require('../utils/queryAnalyzer');
+const { analyzeQuery, findSlowQueries, checkIndexUsage, suggestIndexes } = require('../utils/queryAnalyzer');
 const logger = require('../utils/logger');
 
 async function main() {

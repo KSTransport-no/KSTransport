@@ -13,13 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
   Clock, 
-  Calendar,
   ArrowLeft,
-  Users,
-  Truck,
-  MapPin,
-  Package,
-  Scale,
   CheckCircle,
   XCircle,
   Receipt,

@@ -1,7 +1,6 @@
 'use client'
 
 import { Suspense } from 'react'
-import dynamic from 'next/dynamic'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'

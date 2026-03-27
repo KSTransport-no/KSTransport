@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Lightbulb, Plus, Clock, CheckCircle, XCircle, MessageCircle } from 'lucide-react'
+import { Lightbulb, Plus, Clock, CheckCircle, MessageCircle } from 'lucide-react'
 
 interface Forbedringsforslag {
   id: number

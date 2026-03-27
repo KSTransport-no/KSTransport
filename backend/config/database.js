@@ -30,7 +30,7 @@ pool.on('error', (err) => {
 // Test database connection ved oppstart
 async function testConnection() {
   try {
-    const result = await pool.query('SELECT NOW()');
+    await pool.query('SELECT NOW()');
     logger.info('Database connection test successful');
   } catch (error) {
     logger.error('Database connection test failed:', error);

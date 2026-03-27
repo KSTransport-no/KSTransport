@@ -1,9 +1,8 @@
 'use client'
 
-import React, { useMemo, useCallback } from 'react'
+import React, { useCallback } from 'react'
 import { VirtualizedList } from '@/components/VirtualizedList'
 import { SkiftListItem } from './SkiftListItem'
-import { Checkbox } from '@/components/ui/checkbox'
 
 interface Skift {
   id: number

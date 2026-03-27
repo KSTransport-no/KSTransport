@@ -351,7 +351,7 @@ router.put('/forbedringsforslag/:id/status', authenticateToken, requireAdmin, [
     }
 
     const { id } = req.params;
-    const { status, kommentar } = req.body;
+    const { status } = req.body;
 
     const result = await pool.query(`
       UPDATE forbedringsforslag 

@@ -143,7 +143,6 @@ export default function HomePage() {
       
       // Hent nåværende værdata
       const current = data.properties.timeseries[0].data.instant.details
-      const nextHour = data.properties.timeseries[1]?.data.instant.details
       
       // Hent prognose for spesifikke tidspunkter (9, 12, 15, 18)
       const forecast = []

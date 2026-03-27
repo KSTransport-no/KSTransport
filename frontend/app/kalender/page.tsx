@@ -259,15 +259,6 @@ export default function KalenderPage() {
     }
   }
 
-  const formatDato = (dato: string) => {
-    return new Date(dato).toLocaleDateString('no-NO', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    })
-  }
-
   const formatTid = (tid: string) => {
     const date = new Date(tid)
     return date.toLocaleTimeString('no-NO', { 
@@ -313,13 +304,6 @@ export default function KalenderPage() {
       case 'egenmelding_barn': return 'Egenmelding barn'
       default: return 'Ukjent'
     }
-  }
-
-  // Funksjon for å beregne ukenummer
-  const getWeekNumber = (date: Date): number => {
-    const firstDayOfYear = new Date(date.getFullYear(), 0, 1)
-    const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000
-    return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7)
   }
 
   // Funksjon for å sjekke om en dato er en norsk helligdag

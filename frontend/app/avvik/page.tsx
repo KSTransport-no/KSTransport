@@ -57,7 +57,6 @@ export default function AvvikPage() {
     bilde: null as File | null,
     bilder: [] as File[]
   })
-  const [capturedImage, setCapturedImage] = useState<string | null>(null)
   const [capturedImages, setCapturedImages] = useState<string[]>([])
   const [imageRotations, setImageRotations] = useState<{ [key: number]: number }>({})
   const [editingAvvik, setEditingAvvik] = useState<number | null>(null)
@@ -68,7 +67,7 @@ export default function AvvikPage() {
   const [selectedStatus, setSelectedStatus] = useState<'alle' | 'ny' | 'under_behandling' | 'løst'>('alle')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest')
-  const [expandedAvvik, setExpandedAvvik] = useState<number | null>(null)
+  const [expandedAvvik] = useState<number | null>(null)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
   useEffect(() => {

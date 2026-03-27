@@ -18,7 +18,6 @@ import {
   Trash,
   ArrowLeft,
   CheckCircle,
-  XCircle,
   LogOut
 } from 'lucide-react'
 
@@ -188,7 +187,6 @@ export default function SgaKoderPage() {
   }
 
   const aktiveKoder = sgaKoder.filter(s => s.aktiv).length
-  const inaktiveKoder = sgaKoder.filter(s => !s.aktiv).length
   const fakturerbareKoder = sgaKoder.filter(s => s.skal_faktureres && s.aktiv).length
 
   return (

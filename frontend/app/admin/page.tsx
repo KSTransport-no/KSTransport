@@ -27,7 +27,6 @@ import {
   Package,
   MapPin,
   Pause,
-  MessageSquare,
   Scale,
   Phone,
   Key,

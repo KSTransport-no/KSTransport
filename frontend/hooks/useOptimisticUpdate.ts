@@ -44,7 +44,6 @@ export function useOptimisticUpdate<T>(
         setData(prev => prev.filter(i => (i as any).id !== id))
         setPendingUpdates(prev => {
           const next = new Map(prev)
-          const originalItem = next.get(id)
           next.delete(id)
           return next
         })

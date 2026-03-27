@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { usePWA } from '@/contexts/PWAContext'
 import { getPendingCount } from '@/lib/offlineStorage'
 import { logger } from '@/lib/logger'
-import { WifiOff, Wifi, CloudOff, UploadCloud, CheckCircle } from 'lucide-react'
+import { WifiOff, CloudOff, UploadCloud } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 

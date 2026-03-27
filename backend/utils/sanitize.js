@@ -86,7 +86,8 @@ const sanitizeEmail = (email) => {
   }
 
   const sanitized = sanitizeString(email.toLowerCase().trim());
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // More robust email validation regex (practical subset of RFC 5322)
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
   
   if (emailRegex.test(sanitized)) {
     return sanitized;

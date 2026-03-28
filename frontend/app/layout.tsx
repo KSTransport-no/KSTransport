@@ -6,6 +6,7 @@ import { PWAProvider } from '@/contexts/PWAContext'
 import { CACHE_VERSION } from '@/lib/cacheUtils'
 import { Toaster } from '@/components/ui/toaster'
 import { OfflineWrapper } from '@/components/OfflineWrapper'
+import { VersionFooter } from '@/components/VersionFooter'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -51,6 +52,9 @@ export default function RootLayout({
             <Toaster />
           </AuthProvider>
         </PWAProvider>
+        <footer className="fixed bottom-0 left-0 w-full pointer-events-none text-center py-1">
+          <VersionFooter />
+        </footer>
       </body>
     </html>
   )

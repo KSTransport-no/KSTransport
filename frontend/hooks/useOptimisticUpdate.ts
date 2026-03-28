@@ -43,15 +43,16 @@ export function useOptimisticUpdate<T>(
         // Reverser endringen
         setData(prev => prev.filter(i => (i as any).id !== id))
         setPendingUpdates(prev => {
+          const originalItem = prev.get(id)
           const next = new Map(prev)
           next.delete(id)
+          if (onError && originalItem) {
+            onError(error, originalItem)
+          }
           return next
         })
-        if (onError && pendingUpdates.get(id)) {
-          onError(error, pendingUpdates.get(id)!)
-        }
       })
-  }, [updateFn, onSuccess, onError, pendingUpdates])
+  }, [updateFn, onSuccess, onError])
 
   const updateOptimistic = useCallback((id: number | string, updates: Partial<T>) => {
     const originalItem = data.find((item: any) => item.id === id)

@@ -59,7 +59,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Deklarer url én gang
+  // Deklarerer url én gang
   let url;
   try {
     url = new URL(event.request.url);

@@ -7,7 +7,7 @@ interface VirtualizedListProps<T> {
   items: T[]
   height: number
   itemHeight: number
-  renderItem: (item: T, index: number, style: React.CSSProperties) => React.ReactNode
+  renderItem: (item: T, index: number) => React.ReactNode
   className?: string
   overscanCount?: number
 }
@@ -30,7 +30,7 @@ export function VirtualizedList<T>({
       if (!item) {
         return null
       }
-      return <div style={style}>{renderItem(item, index, style)}</div>
+      return <div style={style}>{renderItem(item, index)}</div>
     }
     RowComponent.displayName = 'VirtualizedListRow'
     return RowComponent

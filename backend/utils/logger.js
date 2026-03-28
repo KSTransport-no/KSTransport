@@ -18,7 +18,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 let minLevel =
   LEVELS[process.env.LOG_LEVEL] ??
-  (isProduction ? LEVELS.info : LEVELS.debug);
+  (isProduction ? LEVELS.warn : LEVELS.debug);
 
 function shouldLog(level) {
   return LEVELS[level] >= minLevel;

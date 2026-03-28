@@ -16,7 +16,7 @@ const isProduction =
   process.env.NODE_ENV === 'production' ||
   process.env.NEXT_PUBLIC_NODE_ENV === 'production';
 
-const defaultLevel = isProduction ? LEVELS.info : LEVELS.debug;
+const defaultLevel = isProduction ? LEVELS.warn : LEVELS.debug;
 
 function getStoredLevel(): number {
   if (typeof window === 'undefined') return defaultLevel;

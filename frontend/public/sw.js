@@ -1,7 +1,7 @@
 // Cache version — update this value when deploying new assets.
 // The browser only re-installs the SW when sw.js content changes,
 // so changing this string is enough to bust the cache on deploy.
-const CACHE_VERSION = "v1.0.4";
+const CACHE_VERSION = "v1.0.5";
 const CACHE_NAME = `kstransport-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline";
 

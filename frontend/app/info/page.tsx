@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { logger } from '@/lib/logger'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Phone, Key, ArrowLeft, User, Calendar, Clock, Heart, Baby, Plane, AlertTriangle, LogOut, Edit, Save, X } from 'lucide-react'
+import { Phone, Key, ArrowLeft, User, Calendar, Clock, Heart, Baby, Plane, AlertTriangle, LogOut, Edit, Save, X, Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -60,6 +60,7 @@ export default function InfoPage() {
   const [loadingProfil, setLoadingProfil] = useState(false)
   const [personligStatistikk, setPersonligStatistikk] = useState<PersonligStatistikk | null>(null)
   const [loadingStatistikk, setLoadingStatistikk] = useState(false)
+  const [søk, setSøk] = useState('')
 
   // Rens telefonnummer for tel: link (fjern mellomrom, bindestreker, etc.)
   const cleanPhoneNumber = (phone: string): string => {
@@ -359,6 +360,15 @@ export default function InfoPage() {
             <CardHeader className="p-3 sm:p-6">
               <CardTitle className="text-base sm:text-lg">Info-kort</CardTitle>
               <CardDescription className="text-sm">Telefonnumre og koder</CardDescription>
+              <div className="relative mt-2">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Søk etter navn, nummer eller kode..."
+                  value={søk}
+                  onChange={(e) => setSøk(e.target.value)}
+                  className="pl-9 text-sm"
+                />
+              </div>
             </CardHeader>
             <CardContent className="p-3 sm:p-6">
               {loadingInfo ? (
@@ -375,8 +385,8 @@ export default function InfoPage() {
                       Telefonnumre
                     </h4>
                     <div className="space-y-2">
-                      {infoKort.filter(info => info.kategori === 'telefon').length > 0 ? (
-                        infoKort.filter(info => info.kategori === 'telefon').map((info, index) => (
+                      {infoKort.filter(info => info.kategori === 'telefon' && (søk.trim() === '' || info.navn.toLowerCase().includes(søk.toLowerCase()) || info.verdi.toLowerCase().includes(søk.toLowerCase()) || (info.beskrivelse && info.beskrivelse.toLowerCase().includes(søk.toLowerCase())))).length > 0 ? (
+                        infoKort.filter(info => info.kategori === 'telefon' && (søk.trim() === '' || info.navn.toLowerCase().includes(søk.toLowerCase()) || info.verdi.toLowerCase().includes(søk.toLowerCase()) || (info.beskrivelse && info.beskrivelse.toLowerCase().includes(søk.toLowerCase())))).map((info, index) => (
                           <div key={index} className="p-3 bg-gray-50 rounded-lg">
                             <p className="font-medium text-sm">{info.navn}</p>
                             <a 
@@ -404,8 +414,8 @@ export default function InfoPage() {
                       Koder
                     </h4>
                     <div className="space-y-2">
-                      {infoKort.filter(info => info.kategori === 'kode').length > 0 ? (
-                        infoKort.filter(info => info.kategori === 'kode').map((info, index) => (
+                      {infoKort.filter(info => info.kategori === 'kode' && (søk.trim() === '' || info.navn.toLowerCase().includes(søk.toLowerCase()) || info.verdi.toLowerCase().includes(søk.toLowerCase()) || (info.beskrivelse && info.beskrivelse.toLowerCase().includes(søk.toLowerCase())))).length > 0 ? (
+                        infoKort.filter(info => info.kategori === 'kode' && (søk.trim() === '' || info.navn.toLowerCase().includes(søk.toLowerCase()) || info.verdi.toLowerCase().includes(søk.toLowerCase()) || (info.beskrivelse && info.beskrivelse.toLowerCase().includes(søk.toLowerCase())))).map((info, index) => (
                           <div key={index} className="p-3 bg-gray-50 rounded-lg">
                             <p className="font-medium text-sm">{info.navn}</p>
                             <p className="text-sm text-gray-600 font-mono">{info.verdi}</p>

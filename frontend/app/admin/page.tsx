@@ -34,7 +34,8 @@ import {
   CheckCircle,
   XCircle,
   Receipt,
-  Settings
+  Settings,
+  Search
 } from 'lucide-react'
 import { NotificationBell } from '@/components/NotificationBell'
 import { PageSkeleton } from '@/components/loading/PageSkeleton'
@@ -132,6 +133,7 @@ export default function AdminPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [showInfoDialog, setShowInfoDialog] = useState(false)
   const [editingInfo, setEditingInfo] = useState<InfoKort | null>(null)
+  const [infoSøk, setInfoSøk] = useState('')
   const [newInfo, setNewInfo] = useState({
     kategori: 'telefon' as 'telefon' | 'kode',
     navn: '',
@@ -752,6 +754,15 @@ export default function AdminPage() {
                 Legg til
               </Button>
             </div>
+            <div className="relative mt-2">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Søk etter navn, nummer eller kode..."
+                value={infoSøk}
+                onChange={(e) => setInfoSøk(e.target.value)}
+                className="pl-9 text-sm"
+              />
+            </div>
           </CardHeader>
           <CardContent className="p-3 sm:p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -762,7 +773,7 @@ export default function AdminPage() {
                   Telefonnumre
                 </h4>
                 <div className="space-y-2">
-                  {infoKort.filter(info => info.kategori === 'telefon').map((info) => (
+                  {infoKort.filter(info => info.kategori === 'telefon' && (infoSøk.trim() === '' || info.navn.toLowerCase().includes(infoSøk.toLowerCase()) || info.verdi.toLowerCase().includes(infoSøk.toLowerCase()) || (info.beskrivelse && info.beskrivelse.toLowerCase().includes(infoSøk.toLowerCase())))).map((info) => (
                     <div key={info.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate">{info.navn}</p>
@@ -801,7 +812,7 @@ export default function AdminPage() {
                   Koder
                 </h4>
                 <div className="space-y-2">
-                  {infoKort.filter(info => info.kategori === 'kode').map((info) => (
+                  {infoKort.filter(info => info.kategori === 'kode' && (infoSøk.trim() === '' || info.navn.toLowerCase().includes(infoSøk.toLowerCase()) || info.verdi.toLowerCase().includes(infoSøk.toLowerCase()) || (info.beskrivelse && info.beskrivelse.toLowerCase().includes(infoSøk.toLowerCase())))).map((info) => (
                     <div key={info.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate">{info.navn}</p>

@@ -17,5 +17,5 @@ export function VersionFooter() {
 
   if (!version) return null
 
-  return <span className="text-[10px] text-gray-300">{version}</span>
+  return <span className="text-xs text-gray-400">{version}</span>
 }

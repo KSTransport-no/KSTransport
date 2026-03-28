@@ -52,7 +52,7 @@ export default function RootLayout({
             <Toaster />
           </AuthProvider>
         </PWAProvider>
-        <footer className="fixed bottom-0 left-0 w-full pointer-events-none text-center py-1">
+        <footer className="w-full text-center py-2 mt-4">
           <VersionFooter />
         </footer>
       </body>
